@@ -23,6 +23,9 @@ export class UsersController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
+    if (!createUserDto.login || !createUserDto.password) {
+      throw new BadRequestException('Login and password are required');
+    }
     return this.usersService.create(createUserDto);
   }
 
@@ -30,6 +33,9 @@ export class UsersController {
   update(@Param('id') id: string, @Body() updatePasswordDto: UpdatePasswordDto) {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid UUID');
+    }
+    if (!updatePasswordDto.oldPassword || !updatePasswordDto.newPassword) {
+      throw new BadRequestException('Old password and new password are required');
     }
     return this.usersService.update(id, updatePasswordDto);
   }

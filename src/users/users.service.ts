@@ -1,18 +1,22 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { User } from './interfaces/user.interface';
+import { User, UserWithoutPassword } from './interfaces/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { validate as isUUID } from 'uuid';
 
 @Injectable()
 export class UsersService {
   private users: User[] = [];
 
-  findAll(): User[] {
+  findAll(): UserWithoutPassword[] {
     return this.users.map(({ password, ...user }) => user);
   }
 
-  findOne(id: string): User {
+  findOne(id: string): UserWithoutPassword {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid UUID');
+    }
     const user = this.users.find(user => user.id === id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -21,7 +25,7 @@ export class UsersService {
     return userWithoutPassword;
   }
 
-  create(createUserDto: CreateUserDto): User {
+  create(createUserDto: CreateUserDto): UserWithoutPassword {
     const user: User = {
       id: randomUUID(),
       ...createUserDto,
@@ -34,7 +38,10 @@ export class UsersService {
     return userWithoutPassword;
   }
 
-  update(id: string, updatePasswordDto: UpdatePasswordDto): User {
+  update(id: string, updatePasswordDto: UpdatePasswordDto): UserWithoutPassword {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid UUID');
+    }
     const userIndex = this.users.findIndex(user => user.id === id);
     if (userIndex === -1) {
       throw new NotFoundException('User not found');
@@ -58,6 +65,9 @@ export class UsersService {
   }
 
   remove(id: string): void {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid UUID');
+    }
     const userIndex = this.users.findIndex(user => user.id === id);
     if (userIndex === -1) {
       throw new NotFoundException('User not found');
