@@ -4,12 +4,17 @@ import { Artist } from './interfaces/artist.interface';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { validate as isUUID } from 'uuid';
+import { AlbumsService } from '../albums/albums.service';
+import { TracksService } from '../tracks/tracks.service';
 
 @Injectable()
 export class ArtistsService {
   private artists: Artist[] = [];
-  private albums: any[] = []; // TODO: dodać interfejs Album
-  private tracks: any[] = []; // TODO: dodać interfejs Track
+
+  constructor(
+    private readonly albumsService: AlbumsService,
+    private readonly tracksService: TracksService,
+  ) {}
 
   findAll(): Artist[] {
     return this.artists;
@@ -77,20 +82,10 @@ export class ArtistsService {
     }
 
     // Ustaw artistId na null w powiązanych albumach
-    this.albums = this.albums.map(album => {
-      if (album.artistId === id) {
-        return { ...album, artistId: null };
-      }
-      return album;
-    });
+    this.albumsService.removeArtist(id);
 
     // Ustaw artistId na null w powiązanych utworach
-    this.tracks = this.tracks.map(track => {
-      if (track.artistId === id) {
-        return { ...track, artistId: null };
-      }
-      return track;
-    });
+    this.tracksService.removeArtist(id);
 
     this.artists.splice(artistIndex, 1);
   }

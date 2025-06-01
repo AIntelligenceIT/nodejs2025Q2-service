@@ -91,4 +91,13 @@ export class AlbumsService {
 
     this.albums.splice(albumIndex, 1);
   }
+
+  removeArtist(artistId: string): void {
+    this.albums = this.albums.map(album => {
+      if (album.artistId === artistId) {
+        return { ...album, artistId: null };
+      }
+      return album;
+    });
+  }
 } 
