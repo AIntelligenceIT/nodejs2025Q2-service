@@ -8,6 +8,8 @@ import { validate as isUUID } from 'uuid';
 @Injectable()
 export class ArtistsService {
   private artists: Artist[] = [];
+  private albums: any[] = []; // TODO: dodać interfejs Album
+  private tracks: any[] = []; // TODO: dodać interfejs Track
 
   findAll(): Artist[] {
     return this.artists;
@@ -25,6 +27,13 @@ export class ArtistsService {
   }
 
   create(createArtistDto: CreateArtistDto): Artist {
+    if (!createArtistDto.name || typeof createArtistDto.name !== 'string') {
+      throw new BadRequestException('Name is required and must be a string');
+    }
+    if (typeof createArtistDto.grammy !== 'boolean') {
+      throw new BadRequestException('Grammy must be a boolean');
+    }
+
     const artist: Artist = {
       id: randomUUID(),
       ...createArtistDto,
@@ -40,6 +49,13 @@ export class ArtistsService {
     const artistIndex = this.artists.findIndex(artist => artist.id === id);
     if (artistIndex === -1) {
       throw new NotFoundException('Artist not found');
+    }
+
+    if (updateArtistDto.name !== undefined && typeof updateArtistDto.name !== 'string') {
+      throw new BadRequestException('Name must be a string');
+    }
+    if (updateArtistDto.grammy !== undefined && typeof updateArtistDto.grammy !== 'boolean') {
+      throw new BadRequestException('Grammy must be a boolean');
     }
 
     const updatedArtist: Artist = {
@@ -59,6 +75,23 @@ export class ArtistsService {
     if (artistIndex === -1) {
       throw new NotFoundException('Artist not found');
     }
+
+    // Ustaw artistId na null w powiązanych albumach
+    this.albums = this.albums.map(album => {
+      if (album.artistId === id) {
+        return { ...album, artistId: null };
+      }
+      return album;
+    });
+
+    // Ustaw artistId na null w powiązanych utworach
+    this.tracks = this.tracks.map(track => {
+      if (track.artistId === id) {
+        return { ...track, artistId: null };
+      }
+      return track;
+    });
+
     this.artists.splice(artistIndex, 1);
   }
 } 
