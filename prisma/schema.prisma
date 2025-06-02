@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file::memory:?cache=shared"
 }
 
 model User {
@@ -17,30 +17,33 @@ model User {
 }
 
 model Artist {
-  id     String   @id @default(uuid())
-  name   String
-  grammy Boolean
-  albums Album[]
-  tracks Track[]
+  id         String      @id @default(uuid())
+  name       String
+  grammy     Boolean
+  albums     Album[]
+  tracks     Track[]
+  favorites  Favorites[]
 }
 
 model Album {
-  id       String   @id @default(uuid())
-  name     String
-  year     Int
-  artist   Artist?  @relation(fields: [artistId], references: [id])
-  artistId String?
-  tracks   Track[]
+  id         String      @id @default(uuid())
+  name       String
+  year       Int
+  artist     Artist?     @relation(fields: [artistId], references: [id])
+  artistId   String?
+  tracks     Track[]
+  favorites  Favorites[]
 }
 
 model Track {
-  id       String   @id @default(uuid())
-  name     String
-  duration Int
-  artist   Artist?  @relation(fields: [artistId], references: [id])
-  artistId String?
-  album    Album?   @relation(fields: [albumId], references: [id])
-  albumId  String?
+  id         String      @id @default(uuid())
+  name       String
+  duration   Int
+  artist     Artist?     @relation(fields: [artistId], references: [id])
+  artistId   String?
+  album      Album?      @relation(fields: [albumId], references: [id])
+  albumId    String?
+  favorites  Favorites[]
 }
 
 model Favorites {
