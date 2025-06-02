@@ -68,7 +68,6 @@ export class ArtistsService {
       where: { id },
       include: {
         albums: true,
-        tracks: true,
         favorites: true,
       },
     });
@@ -77,21 +76,17 @@ export class ArtistsService {
       throw new NotFoundException(`Artist with ID ${id} not found`);
     }
 
+    // Najpierw ustawiamy track.artistId na null dla wszystkich utworów tego artysty
+    await this.prisma.track.updateMany({
+      where: { artistId: id },
+      data: { artistId: null },
+    });
+
     // Update all albums to remove artist reference
     await Promise.all(
       artist.albums.map((album) =>
         this.prisma.album.update({
           where: { id: album.id },
-          data: { artistId: null },
-        }),
-      ),
-    );
-
-    // Update all tracks to remove artist reference
-    await Promise.all(
-      artist.tracks.map((track) =>
-        this.prisma.track.update({
-          where: { id: track.id },
           data: { artistId: null },
         }),
       ),

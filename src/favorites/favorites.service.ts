@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { validate as isUUID } from 'uuid';
 
 @Injectable()
 export class FavoritesService {
@@ -18,12 +19,16 @@ export class FavoritesService {
   }
 
   async addArtist(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid artist ID');
+    }
+
     const artist = await this.prisma.artist.findUnique({
       where: { id },
     });
 
     if (!artist) {
-      throw new UnprocessableEntityException('Artist not found');
+      throw new NotFoundException('Artist not found');
     }
 
     const favorites = await this.prisma.favorites.findFirst();
@@ -58,6 +63,10 @@ export class FavoritesService {
   }
 
   async removeArtist(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid artist ID');
+    }
+
     const favorites = await this.prisma.favorites.findFirst({
       where: {
         artists: {
@@ -81,12 +90,16 @@ export class FavoritesService {
   }
 
   async addAlbum(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid album ID');
+    }
+
     const album = await this.prisma.album.findUnique({
       where: { id },
     });
 
     if (!album) {
-      throw new UnprocessableEntityException('Album not found');
+      throw new NotFoundException('Album not found');
     }
 
     const favorites = await this.prisma.favorites.findFirst();
@@ -121,6 +134,10 @@ export class FavoritesService {
   }
 
   async removeAlbum(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid album ID');
+    }
+
     const favorites = await this.prisma.favorites.findFirst({
       where: {
         albums: {
@@ -144,12 +161,16 @@ export class FavoritesService {
   }
 
   async addTrack(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid track ID');
+    }
+
     const track = await this.prisma.track.findUnique({
       where: { id },
     });
 
     if (!track) {
-      throw new UnprocessableEntityException('Track not found');
+      throw new NotFoundException('Track not found');
     }
 
     const favorites = await this.prisma.favorites.findFirst();
@@ -184,6 +205,10 @@ export class FavoritesService {
   }
 
   async removeTrack(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid track ID');
+    }
+
     const favorites = await this.prisma.favorites.findFirst({
       where: {
         tracks: {

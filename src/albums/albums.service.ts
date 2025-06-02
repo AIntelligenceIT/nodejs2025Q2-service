@@ -71,12 +71,36 @@ export class AlbumsService {
 
     const album = await this.prisma.album.findUnique({
       where: { id },
+      include: {
+        favorites: true,
+      },
     });
 
     if (!album) {
       throw new NotFoundException(`Album with ID ${id} not found`);
     }
 
+    // Najpierw ustawiamy track.albumId na null dla wszystkich utworów z tego albumu
+    await this.prisma.track.updateMany({
+      where: { albumId: id },
+      data: { albumId: null },
+    });
+
+    // Remove album from favorites
+    await Promise.all(
+      album.favorites.map((favorite) =>
+        this.prisma.favorites.update({
+          where: { id: favorite.id },
+          data: {
+            albums: {
+              disconnect: { id },
+            },
+          },
+        }),
+      ),
+    );
+
+    // Następnie usuwamy album
     await this.prisma.album.delete({
       where: { id },
     });
