@@ -6,6 +6,19 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 import { validate as isUUID } from 'uuid';
 import { AlbumsService } from '../albums/albums.service';
 import { TracksService } from '../tracks/tracks.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class ArtistResponse implements Artist {
+  @ApiProperty({ description: 'Artist ID' })
+  id: string;
+
+  @ApiProperty({ description: 'Artist name' })
+  name: string;
+
+  @ApiProperty({ description: 'Whether artist has won Grammy' })
+  grammy: boolean;
+}
 
 @Injectable()
 export class ArtistsService {
@@ -14,79 +27,57 @@ export class ArtistsService {
   constructor(
     private readonly albumsService: AlbumsService,
     private readonly tracksService: TracksService,
+    private prisma: PrismaService
   ) {}
 
-  findAll(): Artist[] {
-    return this.artists;
+  async findAll(): Promise<ArtistResponse[]> {
+    return this.prisma.artist.findMany();
   }
 
-  findOne(id: string): Artist {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
-    const artist = this.artists.find(artist => artist.id === id);
+  async findOne(id: string): Promise<ArtistResponse> {
+    const artist = await this.prisma.artist.findUnique({
+      where: { id },
+    });
+
     if (!artist) {
-      throw new NotFoundException('Artist not found');
+      throw new NotFoundException(`Artist with ID ${id} not found`);
     }
+
     return artist;
   }
 
-  create(createArtistDto: CreateArtistDto): Artist {
-    if (!createArtistDto.name || typeof createArtistDto.name !== 'string') {
-      throw new BadRequestException('Name is required and must be a string');
-    }
-    if (typeof createArtistDto.grammy !== 'boolean') {
-      throw new BadRequestException('Grammy must be a boolean');
-    }
-
-    const artist: Artist = {
-      id: randomUUID(),
-      ...createArtistDto,
-    };
-    this.artists.push(artist);
-    return artist;
+  async create(createArtistDto: CreateArtistDto): Promise<ArtistResponse> {
+    return this.prisma.artist.create({
+      data: createArtistDto,
+    });
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto): Artist {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
-    const artistIndex = this.artists.findIndex(artist => artist.id === id);
-    if (artistIndex === -1) {
-      throw new NotFoundException('Artist not found');
+  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<ArtistResponse> {
+    const artist = await this.prisma.artist.findUnique({
+      where: { id },
+    });
+
+    if (!artist) {
+      throw new NotFoundException(`Artist with ID ${id} not found`);
     }
 
-    if (updateArtistDto.name !== undefined && typeof updateArtistDto.name !== 'string') {
-      throw new BadRequestException('Name must be a string');
-    }
-    if (updateArtistDto.grammy !== undefined && typeof updateArtistDto.grammy !== 'boolean') {
-      throw new BadRequestException('Grammy must be a boolean');
-    }
-
-    const updatedArtist: Artist = {
-      ...this.artists[artistIndex],
-      ...updateArtistDto,
-    };
-
-    this.artists[artistIndex] = updatedArtist;
-    return updatedArtist;
+    return this.prisma.artist.update({
+      where: { id },
+      data: updateArtistDto,
+    });
   }
 
-  remove(id: string): void {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
+  async remove(id: string): Promise<void> {
+    const artist = await this.prisma.artist.findUnique({
+      where: { id },
+    });
+
+    if (!artist) {
+      throw new NotFoundException(`Artist with ID ${id} not found`);
     }
-    const artistIndex = this.artists.findIndex(artist => artist.id === id);
-    if (artistIndex === -1) {
-      throw new NotFoundException('Artist not found');
-    }
 
-    // Ustaw artistId na null w powiązanych albumach
-    this.albumsService.removeArtist(id);
-
-    // Ustaw artistId na null w powiązanych utworach
-    this.tracksService.removeArtist(id);
-
-    this.artists.splice(artistIndex, 1);
+    await this.prisma.artist.delete({
+      where: { id },
+    });
   }
 } 
