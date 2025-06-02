@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { Album } from './interfaces/album.interface';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
@@ -9,9 +8,6 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class AlbumsService {
   constructor(private prisma: PrismaService) {}
-
-  private albums: Album[] = [];
-  private tracks: any[] = []; // TODO: dodać interfejs Track
 
   async create(createAlbumDto: CreateAlbumDto) {
     return this.prisma.album.create({
@@ -24,6 +20,10 @@ export class AlbumsService {
   }
 
   async findOne(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid UUID');
+    }
+
     const album = await this.prisma.album.findUnique({
       where: { id },
     });
@@ -35,12 +35,16 @@ export class AlbumsService {
     return album;
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto): Album {
+  async update(id: string, updateAlbumDto: UpdateAlbumDto) {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid UUID');
     }
-    const albumIndex = this.albums.findIndex(album => album.id === id);
-    if (albumIndex === -1) {
+
+    const album = await this.prisma.album.findUnique({
+      where: { id },
+    });
+
+    if (!album) {
       throw new NotFoundException('Album not found');
     }
 
@@ -54,16 +58,17 @@ export class AlbumsService {
       throw new BadRequestException('Invalid artistId UUID');
     }
 
-    const updatedAlbum: Album = {
-      ...this.albums[albumIndex],
-      ...updateAlbumDto,
-    };
-
-    this.albums[albumIndex] = updatedAlbum;
-    return updatedAlbum;
+    return this.prisma.album.update({
+      where: { id },
+      data: updateAlbumDto,
+    });
   }
 
   async remove(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid UUID');
+    }
+
     const album = await this.prisma.album.findUnique({
       where: { id },
     });
@@ -77,12 +82,10 @@ export class AlbumsService {
     });
   }
 
-  removeArtist(artistId: string): void {
-    this.albums = this.albums.map(album => {
-      if (album.artistId === artistId) {
-        return { ...album, artistId: null };
-      }
-      return album;
+  async removeArtist(artistId: string) {
+    await this.prisma.album.updateMany({
+      where: { artistId },
+      data: { artistId: null },
     });
   }
 } 

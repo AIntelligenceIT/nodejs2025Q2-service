@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class FavoritesService {
     });
 
     if (!artist) {
-      throw new Error('Artist not found');
+      throw new UnprocessableEntityException('Artist not found');
     }
 
     const favorites = await this.prisma.favorites.findFirst();
@@ -67,7 +67,7 @@ export class FavoritesService {
     });
 
     if (!favorites) {
-      throw new Error('Artist not found in favorites');
+      throw new NotFoundException('Artist not found in favorites');
     }
 
     return this.prisma.favorites.update({
@@ -86,7 +86,7 @@ export class FavoritesService {
     });
 
     if (!album) {
-      throw new Error('Album not found');
+      throw new UnprocessableEntityException('Album not found');
     }
 
     const favorites = await this.prisma.favorites.findFirst();
@@ -130,7 +130,7 @@ export class FavoritesService {
     });
 
     if (!favorites) {
-      throw new Error('Album not found in favorites');
+      throw new NotFoundException('Album not found in favorites');
     }
 
     return this.prisma.favorites.update({
@@ -149,7 +149,7 @@ export class FavoritesService {
     });
 
     if (!track) {
-      throw new Error('Track not found');
+      throw new UnprocessableEntityException('Track not found');
     }
 
     const favorites = await this.prisma.favorites.findFirst();
@@ -193,7 +193,7 @@ export class FavoritesService {
     });
 
     if (!favorites) {
-      throw new Error('Track not found in favorites');
+      throw new NotFoundException('Track not found in favorites');
     }
 
     return this.prisma.favorites.update({
