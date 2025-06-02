@@ -25,6 +25,14 @@ export class UsersService {
     return userWithoutPassword;
   }
 
+  findByLogin(login: string): User {
+    const user = this.users.find(user => user.login === login);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   create(createUserDto: CreateUserDto): UserWithoutPassword {
     const user: User = {
       id: randomUUID(),

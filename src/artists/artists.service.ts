@@ -1,9 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Artist } from './interfaces/artist.interface';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
-import { validate as isUUID } from 'uuid';
 import { AlbumsService } from '../albums/albums.service';
 import { TracksService } from '../tracks/tracks.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -22,8 +20,6 @@ export class ArtistResponse implements Artist {
 
 @Injectable()
 export class ArtistsService {
-  private artists: Artist[] = [];
-
   constructor(
     private readonly albumsService: AlbumsService,
     private readonly tracksService: TracksService,
@@ -70,12 +66,52 @@ export class ArtistsService {
   async remove(id: string): Promise<void> {
     const artist = await this.prisma.artist.findUnique({
       where: { id },
+      include: {
+        albums: true,
+        tracks: true,
+        favorites: true,
+      },
     });
 
     if (!artist) {
       throw new NotFoundException(`Artist with ID ${id} not found`);
     }
 
+    // Update all albums to remove artist reference
+    await Promise.all(
+      artist.albums.map((album) =>
+        this.prisma.album.update({
+          where: { id: album.id },
+          data: { artistId: null },
+        }),
+      ),
+    );
+
+    // Update all tracks to remove artist reference
+    await Promise.all(
+      artist.tracks.map((track) =>
+        this.prisma.track.update({
+          where: { id: track.id },
+          data: { artistId: null },
+        }),
+      ),
+    );
+
+    // Remove artist from favorites
+    await Promise.all(
+      artist.favorites.map((favorite) =>
+        this.prisma.favorites.update({
+          where: { id: favorite.id },
+          data: {
+            artists: {
+              disconnect: { id },
+            },
+          },
+        }),
+      ),
+    );
+
+    // Delete the artist
     await this.prisma.artist.delete({
       where: { id },
     });

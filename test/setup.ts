@@ -1,12 +1,14 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from '../src/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard';
 import { Reflector } from '@nestjs/core';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+let app;
+
+beforeAll(async () => {
+  app = await NestFactory.create(AppModule);
   const reflector = app.get(Reflector);
   
   app.useGlobalPipes(new ValidationPipe({
@@ -28,5 +30,8 @@ async function bootstrap() {
   SwaggerModule.setup('doc', app, document);
 
   await app.listen(4000);
-}
-bootstrap();
+});
+
+afterAll(async () => {
+  await app.close();
+}); 
