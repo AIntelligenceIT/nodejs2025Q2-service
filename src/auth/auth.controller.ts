@@ -1,57 +1,39 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
-import { CreateUserDto } from '../users/dto/create-user.dto';
-import { LoginUserDto } from './dto/login-user.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { Public } from './decorators/public.decorator';
-import { UserWithoutPassword } from '../users/interfaces/user.interface';
+import { Controller, Post, Body, HttpStatus, HttpCode } from '@nestjs/common';
+import { AuthService } from './auth.service'; // Załóżmy, że masz AuthService
+import { LoginDto } from './dto/login.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto'; // Jeśli signup jest tutaj
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Public } from './decorators/public.decorator'; // Importuj dekorator Public
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Public()
-  @Post('signup')
-  async signup(@Body() createUserDto: CreateUserDto): Promise<UserWithoutPassword> {
-    return this.usersService.create(createUserDto);
-  }
-
-  @Public()
+  @Public() // Oznacz ten endpoint jako publiczny
   @Post('login')
-  async login(@Body() loginUserDto: LoginUserDto) {
-    const user = await this.usersService.findByLogin(loginUserDto.login);
-    
-    if (!user || user.password !== loginUserDto.password) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const payload = { userId: user.id, login: user.login };
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-
-    return {
-      accessToken,
-      refreshToken,
-    };
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Logowanie użytkownika', description: 'Uwierzytelnia użytkownika i zwraca token dostępowy.' })
+  @ApiBody({
+    type: LoginDto,
+    description: 'Dane logowania użytkownika.',
+  })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Pomyślnie zalogowano. Zwraca token.' /* type: AuthTokenResponseDto */ })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Nieprawidłowe dane logowania.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Nieprawidłowe dane wejściowe.' })
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto); // Przykładowe wywołanie serwisu
   }
 
-  @Public()
-  @Post('refresh')
-  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
-    try {
-      const payload = this.jwtService.verify(refreshTokenDto.refreshToken);
-      const accessToken = this.jwtService.sign({ 
-        userId: payload.userId, 
-        login: payload.login 
-      });
-      
-      return { accessToken };
-    } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+  // Jeśli endpoint /auth/signup również jest w tym kontrolerze:
+  @Public() // Oznacz ten endpoint jako publiczny
+  @Post('signup')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Rejestracja nowego użytkownika', description: 'Tworzy nowe konto użytkownika.' })
+  @ApiBody({ type: CreateUserDto, description: 'Dane do rejestracji nowego użytkownika.' })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Użytkownik pomyślnie zarejestrowany.' /* type: UserResponseDto */ })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Nieprawidłowe dane lub użytkownik już istnieje.' })
+  async signup(@Body() createUserDto: CreateUserDto) {
+    return this.authService.signup(createUserDto); // Przykładowe wywołanie serwisu
   }
-} 
+}
