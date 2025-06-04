@@ -15,7 +15,7 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }));
 
-  app.useGlobalGuards(new JwtAuthGuard(reflector));
+  app.useGlobalGuards(new JwtAuthGuard(reflector)); // Autoryzacja włączona globalnie
 
   const config = new DocumentBuilder()
     .setTitle('Home Library Service')

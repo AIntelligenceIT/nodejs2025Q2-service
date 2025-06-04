@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../user/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import * as bcrypt from 'bcrypt'; // Odkomentuj, jeśli będziesz używać bcrypt do hashowania haseł
 
 @Injectable()

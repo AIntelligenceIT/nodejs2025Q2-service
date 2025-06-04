@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpStatus, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service'; // Załóżmy, że masz AuthService
 import { LoginDto } from './dto/login.dto';
-import { CreateUserDto } from '../users/dto/create-user.dto'; // Jeśli signup jest tutaj
+import { CreateUserDto } from '../user/dto/create-user.dto'; // Jeśli signup jest tutaj
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { Public } from './decorators/public.decorator'; // Importuj dekorator Public
 

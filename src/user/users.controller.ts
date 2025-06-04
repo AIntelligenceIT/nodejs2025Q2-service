@@ -15,8 +15,8 @@ import {
 
 @ApiTags('Users')
 @ApiBearerAuth() // Wskazuje, że endpointy w tym kontrolerze wymagają autoryzacji Bearer Token
-@Controller('users') // Zmieniono 'user' na 'users' dla zgodności z konwencją REST
-@UseGuards(JwtAuthGuard)
+@Controller('user') // Zmieniamy na 'user', aby pasowało do test/endpoints.ts
+// @UseGuards(JwtAuthGuard) // Usunięto, ponieważ globalny strażnik jest włączony
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

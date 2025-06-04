@@ -5,8 +5,8 @@ import { UpdateTrackDto } from './dto/update-track.dto';
 import { validate as isUUID } from 'uuid';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('track')
-@UseGuards(JwtAuthGuard)
+@Controller('track') // Dodano dekorator Controller z prefiksem ścieżki
+// @UseGuards(JwtAuthGuard) // Usunięto, ponieważ globalny strażnik jest włączony
 export class TracksController {
   constructor(private readonly tracksService: TracksService) {}
 

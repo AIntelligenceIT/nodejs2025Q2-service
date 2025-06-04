@@ -25,18 +25,6 @@ export class TracksService {
   }
 
   create(createTrackDto: CreateTrackDto): Track {
-    if (!createTrackDto.name || typeof createTrackDto.name !== 'string') {
-      throw new BadRequestException('Name is required and must be a string');
-    }
-    if (typeof createTrackDto.duration !== 'number') {
-      throw new BadRequestException('Duration must be a number');
-    }
-    if (createTrackDto.artistId !== null && !isUUID(createTrackDto.artistId)) {
-      throw new BadRequestException('Invalid artist UUID');
-    }
-    if (createTrackDto.albumId !== null && !isUUID(createTrackDto.albumId)) {
-      throw new BadRequestException('Invalid album UUID');
-    }
 
     const track: Track = {
       id: randomUUID(),
@@ -53,19 +41,6 @@ export class TracksService {
     const trackIndex = this.tracks.findIndex(track => track.id === id);
     if (trackIndex === -1) {
       throw new NotFoundException('Track not found');
-    }
-
-    if (updateTrackDto.name !== undefined && typeof updateTrackDto.name !== 'string') {
-      throw new BadRequestException('Name must be a string');
-    }
-    if (updateTrackDto.duration !== undefined && typeof updateTrackDto.duration !== 'number') {
-      throw new BadRequestException('Duration must be a number');
-    }
-    if (updateTrackDto.artistId !== undefined && updateTrackDto.artistId !== null && !isUUID(updateTrackDto.artistId)) {
-      throw new BadRequestException('Invalid artist UUID');
-    }
-    if (updateTrackDto.albumId !== undefined && updateTrackDto.albumId !== null && !isUUID(updateTrackDto.albumId)) {
-      throw new BadRequestException('Invalid album UUID');
     }
 
     const updatedTrack: Track = {
