@@ -25,7 +25,8 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   // Zaktualizowany regex, aby dopuszczał litery, cyfry oraz podstawowe znaki specjalne
-  @Matches(/^[a-zA-Z0-9@$!%*?&]{3,30}$/, {
+  // Dodano '#' do dozwolonych znaków specjalnych
+  @Matches(/^[a-zA-Z0-9@$!%*?&#]{3,30}$/, {
     message: 'Hasło musi zawierać od 3 do 30 znaków i może składać się z liter, cyfr oraz znaków specjalnych (np. @$!%*?&).',
   })
   password: string;

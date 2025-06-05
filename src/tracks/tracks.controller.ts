@@ -1,8 +1,7 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, BadRequestException, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { TracksService } from './tracks.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import { validate as isUUID } from 'uuid';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('track') // Dodano dekorator Controller z prefiksem ścieżki
@@ -18,10 +17,7 @@ export class TracksController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  findOne(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.tracksService.findOne(id);
   }
 
@@ -33,19 +29,13 @@ export class TracksController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  update(@Param('id') id: string, @Body() updateTrackDto: UpdateTrackDto) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateTrackDto: UpdateTrackDto) {
     return this.tracksService.update(id, updateTrackDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.tracksService.remove(id);
   }
 } 

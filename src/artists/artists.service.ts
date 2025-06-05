@@ -5,6 +5,7 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 import { AlbumsService } from '../albums/albums.service';
 import { TracksService } from '../tracks/tracks.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client'; // Import Prisma type
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ArtistResponse implements Artist {
@@ -26,11 +27,12 @@ export class ArtistsService {
     private prisma: PrismaService
   ) {}
 
-  async findAll(): Promise<ArtistResponse[]> {
+  async findAll(): Promise<Artist[]> { // Zmieniono typ zwracany na Artist[]
     return this.prisma.artist.findMany();
   }
 
-  async findOne(id: string): Promise<ArtistResponse> {
+  async findOne(id: string): Promise<Artist> { // Zmieniono typ zwracany na Artist
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const artist = await this.prisma.artist.findUnique({
       where: { id },
     });
@@ -42,13 +44,14 @@ export class ArtistsService {
     return artist;
   }
 
-  async create(createArtistDto: CreateArtistDto): Promise<ArtistResponse> {
+  async create(createArtistDto: CreateArtistDto): Promise<Artist> { // Zmieniono typ zwracany na Artist
     return this.prisma.artist.create({
       data: createArtistDto,
     });
   }
 
-  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<ArtistResponse> {
+  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> { // Zmieniono typ zwracany na Artist
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const artist = await this.prisma.artist.findUnique({
       where: { id },
     });
@@ -63,7 +66,8 @@ export class ArtistsService {
     });
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<void> { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const artist = await this.prisma.artist.findUnique({
       where: { id },
       include: {
@@ -111,4 +115,20 @@ export class ArtistsService {
       where: { id },
     });
   }
+
+  // Metody removeAlbum i removeTrack z ArtistsService są redundantne,
+  // ponieważ logika usuwania powiązań jest już w metodzie remove.
+  // Jeśli te metody były używane gdzieś indziej, należy je przenieść lub usunąć.
+  // async removeAlbum(artistId: string): Promise<Prisma.BatchPayload> {
+  //   await this.prisma.album.updateMany({
+  //     where: { artistId },
+  //     data: { artistId: null },
+  //   });
+  // }
+  // async removeTrack(artistId: string): Promise<Prisma.BatchPayload> {
+  //   await this.prisma.track.updateMany({
+  //     where: { artistId },
+  //     data: { artistId: null },
+  //   });
+  // }
 } 

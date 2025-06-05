@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
 import { AlbumsService } from './albums.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
@@ -29,7 +29,7 @@ export class AlbumsController {
   @ApiParam({ name: 'id', description: 'Album ID' })
   @ApiResponse({ status: 200, description: 'Return album by id' })
   @ApiResponse({ status: 404, description: 'Album not found' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.albumsService.findOne(id);
   }
 
@@ -39,7 +39,7 @@ export class AlbumsController {
   @ApiResponse({ status: 200, description: 'Album successfully updated' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Album not found' })
-  update(@Param('id') id: string, @Body() updateAlbumDto: UpdateAlbumDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateAlbumDto: UpdateAlbumDto) {
     return this.albumsService.update(id, updateAlbumDto);
   }
 
@@ -49,7 +49,7 @@ export class AlbumsController {
   @ApiParam({ name: 'id', description: 'Album ID' })
   @ApiResponse({ status: 204, description: 'Album successfully deleted' })
   @ApiResponse({ status: 404, description: 'Album not found' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.albumsService.remove(id);
   }
 } 

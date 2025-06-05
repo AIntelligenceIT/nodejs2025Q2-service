@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { validate as isUUID } from 'uuid';
+import { Favorites } from '@prisma/client'; // Import Favorites type
 
 @Injectable()
 export class FavoritesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
-    const favorites = await this.prisma.favorites.findFirst({
+  async findAll(): Promise<Favorites & { artists: any[]; albums: any[]; tracks: any[] }> { // Dodano typ zwracany
+    let favorites = await this.prisma.favorites.findFirst({
       include: {
         artists: true,
         albums: true,
@@ -15,13 +15,22 @@ export class FavoritesService {
       },
     });
 
-    return favorites || { artists: [], albums: [], tracks: [] };
+    if (!favorites) {
+      // Utwórz domyślny wpis ulubionych, jeśli żaden nie istnieje
+      favorites = await this.prisma.favorites.create({
+        data: {}, // Początkowo brak artystów, albumów, utworów
+        include: {
+          artists: true,
+          albums: true,
+          tracks: true,
+        },
+      });
+    }
+    return favorites;
   }
 
-  async addArtist(id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid artist ID');
-    }
+  async addArtist(id: string): Promise<Favorites & { artists: any[]; albums: any[]; tracks: any[] }> { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
 
     const artist = await this.prisma.artist.findUnique({
       where: { id },
@@ -62,10 +71,8 @@ export class FavoritesService {
     });
   }
 
-  async removeArtist(id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid artist ID');
-    }
+  async removeArtist(id: string): Promise<Favorites> { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
 
     const favorites = await this.prisma.favorites.findFirst({
       where: {
@@ -89,10 +96,8 @@ export class FavoritesService {
     });
   }
 
-  async addAlbum(id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid album ID');
-    }
+  async addAlbum(id: string): Promise<Favorites & { artists: any[]; albums: any[]; tracks: any[] }> { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
 
     const album = await this.prisma.album.findUnique({
       where: { id },
@@ -133,10 +138,8 @@ export class FavoritesService {
     });
   }
 
-  async removeAlbum(id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid album ID');
-    }
+  async removeAlbum(id: string): Promise<Favorites> { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
 
     const favorites = await this.prisma.favorites.findFirst({
       where: {
@@ -160,10 +163,8 @@ export class FavoritesService {
     });
   }
 
-  async addTrack(id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid track ID');
-    }
+  async addTrack(id: string): Promise<Favorites & { artists: any[]; albums: any[]; tracks: any[] }> { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
 
     const track = await this.prisma.track.findUnique({
       where: { id },
@@ -204,10 +205,8 @@ export class FavoritesService {
     });
   }
 
-  async removeTrack(id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid track ID');
-    }
+  async removeTrack(id: string): Promise<Favorites> { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
 
     const favorites = await this.prisma.favorites.findFirst({
       where: {

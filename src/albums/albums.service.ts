@@ -1,29 +1,26 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Album } from './interfaces/album.interface';
 import { CreateAlbumDto } from './dto/create-album.dto';
+import { Prisma } from '@prisma/client'; // Import Prisma type
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { validate as isUUID } from 'uuid';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AlbumsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createAlbumDto: CreateAlbumDto) {
+  async create(createAlbumDto: CreateAlbumDto): Promise<Album> { // Dodano typ zwracany
     return this.prisma.album.create({
       data: createAlbumDto,
     });
   }
 
-  async findAll() {
+  async findAll(): Promise<Album[]> { // Dodano typ zwracany
     return this.prisma.album.findMany();
   }
 
-  async findOne(id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
-
+  async findOne(id: string): Promise<Album> { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const album = await this.prisma.album.findUnique({
       where: { id },
     });
@@ -35,11 +32,8 @@ export class AlbumsService {
     return album;
   }
 
-  async update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
-
+  async update(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const album = await this.prisma.album.findUnique({
       where: { id },
     });
@@ -48,16 +42,7 @@ export class AlbumsService {
       throw new NotFoundException('Album not found');
     }
 
-    if (updateAlbumDto.name !== undefined && typeof updateAlbumDto.name !== 'string') {
-      throw new BadRequestException('Name must be a string');
-    }
-    if (updateAlbumDto.year !== undefined && (typeof updateAlbumDto.year !== 'number' || updateAlbumDto.year < 1900 || updateAlbumDto.year > new Date().getFullYear())) {
-      throw new BadRequestException('Year must be a number between 1900 and current year');
-    }
-    if (updateAlbumDto.artistId !== undefined && updateAlbumDto.artistId !== null && !isUUID(updateAlbumDto.artistId)) {
-      throw new BadRequestException('Invalid artistId UUID');
-    }
-
+    // Usunięto redundantną walidację - obsługuje ją ValidationPipe
     return this.prisma.album.update({
       where: { id },
       data: updateAlbumDto,
@@ -65,10 +50,7 @@ export class AlbumsService {
   }
 
   async remove(id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
-
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const album = await this.prisma.album.findUnique({
       where: { id },
       include: {
@@ -106,8 +88,8 @@ export class AlbumsService {
     });
   }
 
-  async removeArtist(artistId: string) {
-    await this.prisma.album.updateMany({
+  async removeArtist(artistId: string): Promise<Prisma.BatchPayload> { // Dodano typ zwracany
+    return this.prisma.album.updateMany({
       where: { artistId },
       data: { artistId: null },
     });

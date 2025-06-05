@@ -1,8 +1,7 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, BadRequestException, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { validate as isUUID } from 'uuid';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   ApiTags,
@@ -46,10 +45,7 @@ export class UsersController {
     description: 'Invalid UUID format.',
   })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
-  findOne(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID format for user ID.');
-    }
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
@@ -88,10 +84,7 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input data or invalid UUID format.' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
-  update(@Param('id') id: string, @Body() updatePasswordDto: UpdatePasswordDto) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID format for user ID.');
-    }
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() updatePasswordDto: UpdatePasswordDto) {
     // Walidacja pól (oldPassword, newPassword) powinna być obsłużona przez
     // class-validator w UpdatePasswordDto i globalny ValidationPipe.
     // Poniższe sprawdzenie jest redundantne, jeśli DTO jest poprawnie zdefiniowane.
@@ -115,10 +108,7 @@ export class UsersController {
     description: 'Invalid UUID format.',
   })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
-  remove(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID format for user ID.');
-    }
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
 } 

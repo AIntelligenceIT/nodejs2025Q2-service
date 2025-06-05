@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 
@@ -20,7 +20,7 @@ export class FavoritesController {
   @ApiResponse({ status: 201, description: 'Artist added to favorites' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 422, description: 'Artist not found' })
-  addArtist(@Param('id') id: string) {
+  addArtist(@Param('id', ParseUUIDPipe) id: string) {
     return this.favoritesService.addArtist(id);
   }
 
@@ -31,7 +31,7 @@ export class FavoritesController {
   @ApiResponse({ status: 204, description: 'Artist removed from favorites' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Artist not found in favorites' })
-  removeArtist(@Param('id') id: string) {
+  removeArtist(@Param('id', ParseUUIDPipe) id: string) {
     return this.favoritesService.removeArtist(id);
   }
 
@@ -41,7 +41,7 @@ export class FavoritesController {
   @ApiResponse({ status: 201, description: 'Album added to favorites' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 422, description: 'Album not found' })
-  addAlbum(@Param('id') id: string) {
+  addAlbum(@Param('id', ParseUUIDPipe) id: string) {
     return this.favoritesService.addAlbum(id);
   }
 
@@ -52,7 +52,7 @@ export class FavoritesController {
   @ApiResponse({ status: 204, description: 'Album removed from favorites' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Album not found in favorites' })
-  removeAlbum(@Param('id') id: string) {
+  removeAlbum(@Param('id', ParseUUIDPipe) id: string) {
     return this.favoritesService.removeAlbum(id);
   }
 
@@ -62,7 +62,7 @@ export class FavoritesController {
   @ApiResponse({ status: 201, description: 'Track added to favorites' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 422, description: 'Track not found' })
-  addTrack(@Param('id') id: string) {
+  addTrack(@Param('id', ParseUUIDPipe) id: string) {
     return this.favoritesService.addTrack(id);
   }
 
@@ -73,7 +73,7 @@ export class FavoritesController {
   @ApiResponse({ status: 204, description: 'Track removed from favorites' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Track not found in favorites' })
-  removeTrack(@Param('id') id: string) {
+  removeTrack(@Param('id', ParseUUIDPipe) id: string) {
     return this.favoritesService.removeTrack(id);
   }
 } 

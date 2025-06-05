@@ -3,20 +3,17 @@ import { randomUUID } from 'crypto';
 import { Track } from './interfaces/track.interface';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import { validate as isUUID } from 'uuid';
 
 @Injectable()
 export class TracksService {
   private tracks: Track[] = [];
 
   findAll(): Track[] {
-    return this.tracks;
+    return this.tracks; // Dodano typ zwracany
   }
 
   findOne(id: string): Track {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const track = this.tracks.find(track => track.id === id);
     if (!track) {
       throw new NotFoundException('Track not found');
@@ -24,8 +21,8 @@ export class TracksService {
     return track;
   }
 
-  create(createTrackDto: CreateTrackDto): Track {
-
+  create(createTrackDto: CreateTrackDto): Track { // Dodano typ zwracany
+    // Walidacja DTO jest obsługiwana przez ValidationPipe
     const track: Track = {
       id: randomUUID(),
       ...createTrackDto,
@@ -35,14 +32,12 @@ export class TracksService {
   }
 
   update(id: string, updateTrackDto: UpdateTrackDto): Track {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const trackIndex = this.tracks.findIndex(track => track.id === id);
     if (trackIndex === -1) {
       throw new NotFoundException('Track not found');
     }
-
+    // Walidacja DTO jest obsługiwana przez ValidationPipe
     const updatedTrack: Track = {
       ...this.tracks[trackIndex],
       ...updateTrackDto,
@@ -52,10 +47,8 @@ export class TracksService {
     return updatedTrack;
   }
 
-  remove(id: string): void {
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
+  remove(id: string): void { // Dodano typ zwracany
+    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const trackIndex = this.tracks.findIndex(track => track.id === id);
     if (trackIndex === -1) {
       throw new NotFoundException('Track not found');
@@ -63,7 +56,7 @@ export class TracksService {
     this.tracks.splice(trackIndex, 1);
   }
 
-  removeArtist(artistId: string): void {
+  removeArtist(artistId: string): void { // Dodano typ zwracany
     this.tracks = this.tracks.map(track => {
       if (track.artistId === artistId) {
         return { ...track, artistId: null };
