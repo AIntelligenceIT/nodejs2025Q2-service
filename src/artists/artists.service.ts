@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Artist } from './interfaces/artist.interface';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
-import { AlbumsService } from '../albums/albums.service';
-import { TracksService } from '../tracks/tracks.service';
+import { AlbumsService } from '../albums/albums.service'; // Zakładając, że ścieżka jest poprawna
+import { TracksService } from '../tracks/tracks.service'; // Zakładając, że ścieżka jest poprawna
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client'; // Import Prisma type
 import { ApiProperty } from '@nestjs/swagger';

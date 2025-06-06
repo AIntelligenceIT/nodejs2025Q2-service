@@ -18,7 +18,7 @@ export class CreateUserDto {
   @ApiProperty({
     description:
       'Hasło użytkownika. Musi zawierać od 3 do 30 znaków, w tym litery, cyfry i/lub znaki specjalne (np. @$!%*?&).',
-    example: 'P@sswOrd_123#', // Przykład zaktualizowany o _ i #
+    example: 'P@sswOrd123', // Przykład zaktualizowany o _ i #
     pattern: '^[a-zA-Z0-9_@$!%*?&#]{3,30}$', // Dodano _ i # do wzorca Swaggera
     required: true,
   })

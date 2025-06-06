@@ -2,7 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { AlbumsService } from './albums.service';
 import { AlbumsController } from './albums.controller';
 import { PrismaModule } from '../prisma/prisma.module';
-import { ArtistsModule } from '../artists/artists.module';
+import { ArtistsModule } from '../artists/artists.module'; // Zakładając, że ścieżka jest poprawna
 
 @Module({
   imports: [PrismaModule, forwardRef(() => ArtistsModule)],
