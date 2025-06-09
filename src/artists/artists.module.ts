@@ -4,11 +4,14 @@ import { ArtistsController } from './artists.controller';
 import { AlbumsModule } from '../albums/albums.module'; // Zakładając, że ścieżka jest poprawna
 import { TracksModule } from '../tracks/tracks.module'; // Zakładając, że ścieżka jest poprawna
 import { FavoritesModule } from '../favorites/favorites.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ArtistEntity } from '../database/entities/artist.entity';
 
 @Module({
   imports: [
-    forwardRef(() => AlbumsModule),
-    TracksModule,
+    TypeOrmModule.forFeature([ArtistEntity]),
+    forwardRef(() => AlbumsModule), // AlbumsModule może potrzebować ArtistsService
+    forwardRef(() => TracksModule), // TracksModule może potrzebować ArtistsService
     forwardRef(() => FavoritesModule),
   ],
   controllers: [ArtistsController],
