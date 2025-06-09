@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: home-library-app
     ports:
-      - "${PORT:-4000}:${PORT:-4000}" # Używa PORT z .env lub domyślnie 4000
+      - "${APP_PORT:-4000}:${APP_PORT:-4000}" # Używa PORT z .env lub domyślnie 4000
     env_file:
       - .env # Przekazuje zmienne środowiskowe z pliku .env
     depends_on:

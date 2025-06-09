@@ -11,24 +11,61 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+// Zaimportuj swoje encje bezpośrednio
+import { UserEntity } from './database/entities/user.entity';
+import { ArtistEntity } from './database/entities/artist.entity';
+import { AlbumEntity } from './database/entities/album.entity';
+import { TrackEntity } from './database/entities/track.entity';
+import { FavoritesEntity } from './database/entities/favorites.entity';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('POSTGRES_HOST'),
-        port: parseInt(configService.get<string>('POSTGRES_PORT'), 10),
-        username: configService.get<string>('POSTGRES_USER'),
-        password: configService.get<string>('POSTGRES_PASSWORD'),
-        database: configService.get<string>('POSTGRES_DB'),
-        entities: [__dirname + '/../**/*.entity{.ts,.js}'], // Ścieżka do encji
-        synchronize: true, // UWAGA: Tylko dla developmentu! Automatycznie tworzy schemat bazy.
-        // Dla produkcji użyj migracji (synchronize: false)
-        logging: configService.get<string>('NODE_ENV') === 'development', // Logowanie zapytań w trybie deweloperskim
-      }),
+      useFactory: (configService: ConfigService) => {
+        console.log('[AppModule] Initializing TypeORM configuration...');
+
+        const host = configService.get<string>('POSTGRES_HOST');
+        const portStr = configService.get<string>('POSTGRES_PORT');
+        const username = configService.get<string>('POSTGRES_USER');
+        const password = configService.get<string>('POSTGRES_PASSWORD');
+        const database = configService.get<string>('POSTGRES_DB');
+        const nodeEnv = configService.get<string>('NODE_ENV');
+
+        console.log(`[AppModule] POSTGRES_HOST: ${host} (type: ${typeof host})`);
+        console.log(`[AppModule] POSTGRES_PORT: ${portStr} (type: ${typeof portStr})`);
+        console.log(`[AppModule] POSTGRES_USER: ${username} (type: ${typeof username})`);
+        console.log(`[AppModule] POSTGRES_PASSWORD_PRESENT: ${!!password}`);
+        console.log(`[AppModule] POSTGRES_DB: ${database} (type: ${typeof database})`);
+        console.log(`[AppModule] NODE_ENV: ${nodeEnv} (type: ${typeof nodeEnv})`);
+
+        if (!host || !portStr || !username || !password || !database) {
+          console.error('[AppModule] CRITICAL: One or more database connection parameters are missing from .env!');
+          // Możesz rzucić błąd tutaj, aby zatrzymać aplikację, jeśli parametry są krytyczne
+          // throw new Error('Missing database configuration parameters');
+        }
+
+        return {
+          type: 'postgres',
+          host: host,
+          port: parseInt(portStr || '5432', 10),
+          username: username,
+          password: password,
+          database: database,
+          // entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+          entities: [
+            UserEntity,
+            ArtistEntity,
+            AlbumEntity,
+            TrackEntity,
+            FavoritesEntity,
+          ], // Użyj bezpośrednio zaimportowanych encji
+          synchronize: nodeEnv !== 'production', // Lepsze: true tylko w dev
+          logging: nodeEnv === 'development',
+        };
+      },
     }),
     UsersModule,
     AuthModule,

@@ -4,10 +4,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config'; // Poprawiony import ConfigService
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const reflector = app.get(Reflector);
+  const configService = app.get(ConfigService); // Pobierz ConfigService
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -29,6 +31,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('doc', app, document);
 
-  await app.listen(4000);
+  const port = configService.get<number>('APP_PORT') || 4000; // Odczytaj port z .env lub użyj domyślnego
+  await app.listen(port);
+  console.log(`Application is running on: ${await app.getUrl()}`); // Dodatkowe logowanie
 }
 bootstrap();
