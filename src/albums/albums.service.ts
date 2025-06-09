@@ -1,97 +1,87 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Album } from './interfaces/album.interface';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { Prisma } from '@prisma/client'; // Import Prisma type
+// import { Prisma } from '@prisma/client'; // Import Prisma type - Usunięte
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { PrismaService } from '../prisma/prisma.service';
+// import { PrismaService } from '../prisma/prisma.service'; // Usunięte
+import { randomUUID } from 'crypto';
+import { TracksService } from '../tracks/tracks.service';
+import { FavoritesService } from '../favorites/favorites.service';
+import { forwardRef, Inject } from '@nestjs/common';
 
 @Injectable()
 export class AlbumsService {
-  constructor(private prisma: PrismaService) {}
+  private albums: Album[] = [];
 
-  async create(createAlbumDto: CreateAlbumDto): Promise<Album> { // Dodano typ zwracany
-    return this.prisma.album.create({
-      data: createAlbumDto,
-    });
+  constructor(
+    private readonly tracksService: TracksService,
+    @Inject(forwardRef(() => FavoritesService))
+    private readonly favoritesService: FavoritesService,
+  ) {}
+
+  async create(createAlbumDto: CreateAlbumDto): Promise<Album> {
+    const { artistId, ...restOfDto } = createAlbumDto;
+    const newAlbum: Album = {
+      id: randomUUID(),
+      ...restOfDto,
+      artistId: artistId === undefined ? null : artistId,
+    };
+    this.albums.push(newAlbum);
+    return newAlbum;
   }
 
-  async findAll(): Promise<Album[]> { // Dodano typ zwracany
-    return this.prisma.album.findMany();
+  async findAll(): Promise<Album[]> {
+    return this.albums;
   }
 
-  async findOne(id: string): Promise<Album> { // Dodano typ zwracany
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const album = await this.prisma.album.findUnique({
-      where: { id },
-    });
-
+  async findOne(id: string): Promise<Album> {
+    const album = this.albums.find((a) => a.id === id);
     if (!album) {
       throw new NotFoundException(`Album with ID ${id} not found`);
     }
-
     return album;
   }
 
-  async update(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> { // Dodano typ zwracany
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const album = await this.prisma.album.findUnique({
-      where: { id },
-    });
-
-    if (!album) {
-      throw new NotFoundException('Album not found');
+  async update(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> {
+    const albumIndex = this.albums.findIndex((a) => a.id === id);
+    if (albumIndex === -1) {
+      throw new NotFoundException(`Album with ID ${id} not found`);
     }
-
-    // Usunięto redundantną walidację - obsługuje ją ValidationPipe
-    return this.prisma.album.update({
-      where: { id },
-      data: updateAlbumDto,
-    });
+    const updatedAlbum = {
+      ...this.albums[albumIndex],
+      ...updateAlbumDto,
+    };
+    this.albums[albumIndex] = updatedAlbum;
+    return updatedAlbum;
   }
 
-  async remove(id: string) {
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const album = await this.prisma.album.findUnique({
-      where: { id },
-      include: {
-        favorites: true,
-      },
-    });
-
-    if (!album) {
+  async remove(id: string): Promise<void> {
+    const albumIndex = this.albums.findIndex((a) => a.id === id);
+    if (albumIndex === -1) {
       throw new NotFoundException(`Album with ID ${id} not found`);
     }
 
-    // Najpierw ustawiamy track.albumId na null dla wszystkich utworów z tego albumu
-    await this.prisma.track.updateMany({
-      where: { albumId: id },
-      data: { albumId: null },
-    });
+    // Disassociate tracks from this album
+    this.tracksService.removeAlbumAssociation(id);
 
-    // Remove album from favorites
-    await Promise.all(
-      album.favorites.map((favorite) =>
-        this.prisma.favorites.update({
-          where: { id: favorite.id },
-          data: {
-            albums: {
-              disconnect: { id },
-            },
-          },
-        }),
-      ),
-    );
+    // Remove from favorites
+    try {
+      await this.favoritesService.removeAlbumReferences(id);
+    } catch (error) {
+      console.warn(
+        `Attempted to remove non-favorite album ${id} during cleanup or album was already removed from favs.`,
+      );
+    }
 
-    // Następnie usuwamy album
-    await this.prisma.album.delete({
-      where: { id },
-    });
+    this.albums.splice(albumIndex, 1);
   }
 
-  async removeArtist(artistId: string): Promise<Prisma.BatchPayload> { // Dodano typ zwracany
-    return this.prisma.album.updateMany({
-      where: { artistId },
-      data: { artistId: null },
+  removeArtist(artistId: string): void {
+    this.albums = this.albums.map((album) => {
+      if (album.artistId === artistId) {
+        return { ...album, artistId: null };
+      }
+      return album;
     });
   }
-} 
+}

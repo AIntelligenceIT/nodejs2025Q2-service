@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { AlbumsService } from './albums.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
@@ -39,7 +50,10 @@ export class AlbumsController {
   @ApiResponse({ status: 200, description: 'Album successfully updated' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Album not found' })
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateAlbumDto: UpdateAlbumDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateAlbumDto: UpdateAlbumDto,
+  ) {
     return this.albumsService.update(id, updateAlbumDto);
   }
 
@@ -52,4 +66,4 @@ export class AlbumsController {
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.albumsService.remove(id);
   }
-} 
+}

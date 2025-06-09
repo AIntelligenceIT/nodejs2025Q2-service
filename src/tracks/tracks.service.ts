@@ -1,27 +1,34 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { Track } from './interfaces/track.interface';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
+import { FavoritesService } from '../favorites/favorites.service';
+import { forwardRef, Inject } from '@nestjs/common';
 
 @Injectable()
 export class TracksService {
   private tracks: Track[] = [];
 
-  findAll(): Track[] {
+  constructor(
+    @Inject(forwardRef(() => FavoritesService))
+    private readonly favoritesService: FavoritesService,
+  ) {}
+
+  async findAll(): Promise<Track[]> {
     return this.tracks; // Dodano typ zwracany
   }
 
-  findOne(id: string): Track {
+  async findOne(id: string): Promise<Track> {
     // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const track = this.tracks.find(track => track.id === id);
+    const track = this.tracks.find((track) => track.id === id);
     if (!track) {
       throw new NotFoundException('Track not found');
     }
     return track;
   }
-
-  create(createTrackDto: CreateTrackDto): Track { // Dodano typ zwracany
+  async create(createTrackDto: CreateTrackDto): Promise<Track> {
+    // Dodano typ zwracany
     // Walidacja DTO jest obsługiwana przez ValidationPipe
     const track: Track = {
       id: randomUUID(),
@@ -31,9 +38,9 @@ export class TracksService {
     return track;
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto): Track {
+  async update(id: string, updateTrackDto: UpdateTrackDto): Promise<Track> {
     // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const trackIndex = this.tracks.findIndex(track => track.id === id);
+    const trackIndex = this.tracks.findIndex((track) => track.id === id);
     if (trackIndex === -1) {
       throw new NotFoundException('Track not found');
     }
@@ -47,21 +54,40 @@ export class TracksService {
     return updatedTrack;
   }
 
-  remove(id: string): void { // Dodano typ zwracany
+  async remove(id: string): Promise<void> {
+    // Dodano typ zwracany
     // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const trackIndex = this.tracks.findIndex(track => track.id === id);
+    const trackIndex = this.tracks.findIndex((track) => track.id === id);
     if (trackIndex === -1) {
       throw new NotFoundException('Track not found');
+    }
+    // Remove from favorites
+    try {
+      await this.favoritesService.removeTrackReferences(id);
+    } catch (error) {
+      console.warn(
+        `Attempted to remove non-favorite track ${id} during cleanup or track was already removed from favs.`,
+      );
     }
     this.tracks.splice(trackIndex, 1);
   }
 
-  removeArtist(artistId: string): void { // Dodano typ zwracany
-    this.tracks = this.tracks.map(track => {
+  removeArtist(artistId: string): void {
+    // Dodano typ zwracany
+    this.tracks = this.tracks.map((track) => {
       if (track.artistId === artistId) {
         return { ...track, artistId: null };
       }
       return track;
     });
   }
-} 
+
+  removeAlbumAssociation(albumId: string): void {
+    this.tracks = this.tracks.map((track) => {
+      if (track.albumId === albumId) {
+        return { ...track, albumId: null };
+      }
+      return track;
+    });
+  }
+}

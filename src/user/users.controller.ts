@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, BadRequestException, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   ApiTags,
   ApiOperation,
@@ -26,14 +36,21 @@ export class UsersController {
     description: 'Returns an array of users.',
     // Tutaj można dodać `type: [UserResponseDto]` jeśli masz DTO dla odpowiedzi
   })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized.',
+  })
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a single user by ID' })
-  @ApiParam({ name: 'id', description: 'The ID of the user (UUID format)', type: String })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the user (UUID format)',
+    type: String,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Returns the user.',
@@ -44,7 +61,10 @@ export class UsersController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid UUID format.',
   })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized.',
+  })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
   }
@@ -63,9 +83,13 @@ export class UsersController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input data (e.g., missing login/password, or user already exists).',
+    description:
+      'Invalid input data (e.g., missing login/password, or user already exists).',
   })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized.',
+  })
   create(@Body() createUserDto: CreateUserDto) {
     // Walidacja pól (login, password) powinna być obsłużona przez
     // class-validator w CreateUserDto i globalny ValidationPipe.
@@ -78,13 +102,29 @@ export class UsersController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Update user password' })
-  @ApiParam({ name: 'id', description: 'The ID of the user (UUID format)', type: String })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the user (UUID format)',
+    type: String,
+  })
   @ApiBody({ type: UpdatePasswordDto, description: 'Old and new password.' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Password updated successfully.'})
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password updated successfully.',
+  })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found.' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input data or invalid UUID format.' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updatePasswordDto: UpdatePasswordDto) {
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data or invalid UUID format.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized.',
+  })
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updatePasswordDto: UpdatePasswordDto,
+  ) {
     // Walidacja pól (oldPassword, newPassword) powinna być obsłużona przez
     // class-validator w UpdatePasswordDto i globalny ValidationPipe.
     // Poniższe sprawdzenie jest redundantne, jeśli DTO jest poprawnie zdefiniowane.
@@ -97,7 +137,11 @@ export class UsersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a user' })
-  @ApiParam({ name: 'id', description: 'The ID of the user (UUID format)', type: String })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the user (UUID format)',
+    type: String,
+  })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
     description: 'The user has been successfully deleted.',
@@ -107,8 +151,11 @@ export class UsersController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid UUID format.',
   })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized.',
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
-} 
+}

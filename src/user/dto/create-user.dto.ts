@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MinLength, MaxLength, Matches, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  MinLength,
+  MaxLength,
+  Matches,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -26,8 +32,10 @@ export class CreateUserDto {
   @IsNotEmpty()
   // Zaktualizowany regex, aby dopuszczał litery, cyfry oraz podstawowe znaki specjalne
   // Dodano '#' do dozwolonych znaków specjalnych
-  @Matches(/^[a-zA-Z0-9_@$!%*?&#]{3,30}$/, { // Dodano _ do regexu walidacyjnego
-    message: 'Hasło musi zawierać od 3 do 30 znaków i może składać się z liter, cyfr oraz znaków specjalnych (np. @$!%*?&).',
+  @Matches(/^[a-zA-Z0-9_@$!%*?&#]{3,30}$/, {
+    // Dodano _ do regexu walidacyjnego
+    message:
+      'Hasło musi zawierać od 3 do 30 znaków i może składać się z liter, cyfr oraz znaków specjalnych (np. @$!%*?&).',
   })
   password: string;
-} 
+}

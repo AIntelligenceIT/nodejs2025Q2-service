@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, BadRequestException, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { TracksService } from './tracks.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('track') // Dodano dekorator Controller z prefiksem ścieżki
 // @UseGuards(JwtAuthGuard) // Usunięto, ponieważ globalny strażnik jest włączony
@@ -29,7 +39,10 @@ export class TracksController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateTrackDto: UpdateTrackDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateTrackDto: UpdateTrackDto,
+  ) {
     return this.tracksService.update(id, updateTrackDto);
   }
 
@@ -38,4 +51,4 @@ export class TracksController {
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.tracksService.remove(id);
   }
-} 
+}

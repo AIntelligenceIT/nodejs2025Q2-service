@@ -1,11 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  forwardRef,
+  Inject,
+} from '@nestjs/common';
 import { Artist } from './interfaces/artist.interface';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { AlbumsService } from '../albums/albums.service'; // Zakładając, że ścieżka jest poprawna
 import { TracksService } from '../tracks/tracks.service'; // Zakładając, że ścieżka jest poprawna
-import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client'; // Import Prisma type
+import { FavoritesService } from '../favorites/favorites.service';
+// import { PrismaService } from '../prisma/prisma.service'; // Usunięte
+// import { Prisma } from '@prisma/client'; // Import Prisma type - Usunięte
+import { randomUUID } from 'crypto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ArtistResponse implements Artist {
@@ -21,99 +28,70 @@ export class ArtistResponse implements Artist {
 
 @Injectable()
 export class ArtistsService {
+  private artists: Artist[] = [];
+
   constructor(
+    @Inject(forwardRef(() => AlbumsService))
     private readonly albumsService: AlbumsService,
     private readonly tracksService: TracksService,
-    private prisma: PrismaService
+    @Inject(forwardRef(() => FavoritesService))
+    private readonly favoritesService: FavoritesService,
   ) {}
 
-  async findAll(): Promise<Artist[]> { // Zmieniono typ zwracany na Artist[]
-    return this.prisma.artist.findMany();
+  async create(createArtistDto: CreateArtistDto): Promise<Artist> {
+    const newArtist: Artist = {
+      id: randomUUID(),
+      ...createArtistDto,
+    };
+    this.artists.push(newArtist);
+    return newArtist;
   }
 
-  async findOne(id: string): Promise<Artist> { // Zmieniono typ zwracany na Artist
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const artist = await this.prisma.artist.findUnique({
-      where: { id },
-    });
+  async findAll(): Promise<Artist[]> {
+    return this.artists;
+  }
 
+  async findOne(id: string): Promise<Artist> {
+    const artist = this.artists.find((a) => a.id === id);
     if (!artist) {
       throw new NotFoundException(`Artist with ID ${id} not found`);
     }
-
     return artist;
   }
 
-  async create(createArtistDto: CreateArtistDto): Promise<Artist> { // Zmieniono typ zwracany na Artist
-    return this.prisma.artist.create({
-      data: createArtistDto,
-    });
-  }
-
-  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> { // Zmieniono typ zwracany na Artist
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const artist = await this.prisma.artist.findUnique({
-      where: { id },
-    });
-
-    if (!artist) {
+  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
+    const artistIndex = this.artists.findIndex((a) => a.id === id);
+    if (artistIndex === -1) {
       throw new NotFoundException(`Artist with ID ${id} not found`);
     }
-
-    return this.prisma.artist.update({
-      where: { id },
-      data: updateArtistDto,
-    });
+    const updatedArtist = {
+      ...this.artists[artistIndex],
+      ...updateArtistDto,
+    };
+    this.artists[artistIndex] = updatedArtist;
+    return updatedArtist;
   }
 
-  async remove(id: string): Promise<void> { // Dodano typ zwracany
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const artist = await this.prisma.artist.findUnique({
-      where: { id },
-      include: {
-        albums: true,
-        favorites: true,
-      },
-    });
-
-    if (!artist) {
+  async remove(id: string): Promise<void> {
+    const artistIndex = this.artists.findIndex((a) => a.id === id);
+    if (artistIndex === -1) {
       throw new NotFoundException(`Artist with ID ${id} not found`);
     }
+    this.artists.splice(artistIndex, 1);
 
-    // Najpierw ustawiamy track.artistId na null dla wszystkich utworów tego artysty
-    await this.prisma.track.updateMany({
-      where: { artistId: id },
-      data: { artistId: null },
-    });
+    // Disassociate from tracks and albums
+    this.tracksService.removeArtist(id);
+    this.albumsService.removeArtist(id);
 
-    // Update all albums to remove artist reference
-    await Promise.all(
-      artist.albums.map((album) =>
-        this.prisma.album.update({
-          where: { id: album.id },
-          data: { artistId: null },
-        }),
-      ),
-    );
-
-    // Remove artist from favorites
-    await Promise.all(
-      artist.favorites.map((favorite) =>
-        this.prisma.favorites.update({
-          where: { id: favorite.id },
-          data: {
-            artists: {
-              disconnect: { id },
-            },
-          },
-        }),
-      ),
-    );
-
-    // Delete the artist
-    await this.prisma.artist.delete({
-      where: { id },
-    });
+    // Remove from favorites
+    try {
+      await this.favoritesService.removeArtistReferences(id);
+    } catch (error) {
+      // Log or handle if necessary, e.g., if artist wasn't in favorites
+      console.warn(
+        `Attempted to remove non-favorite artist ${id} during cleanup or artist was already removed from favs.`,
+      );
+    }
   }
 
   // Metody removeAlbum i removeTrack z ArtistsService są redundantne,
@@ -131,4 +109,4 @@ export class ArtistsService {
   //     data: { artistId: null },
   //   });
   // }
-} 
+}

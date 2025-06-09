@@ -1,5 +1,5 @@
 import { request } from './lib'; // Zakładam, że to jest Twój skonfigurowany supertest
-import { authRoutes, usersRoutes } from './endpoints';
+import { authRoutes } from './endpoints';
 import { StatusCodes } from 'http-status-codes';
 import { CreateUserDto } from '../src/user/dto/create-user.dto'; // Import DTO dla typowania
 import { UserWithoutPassword } from '../src/user/interfaces/user.interface';
@@ -14,7 +14,7 @@ const diagnosticUserDto: CreateUserDto = {
 // Dane logowania używane w problematycznej funkcji getTokenAndUserId.ts
 const getTokenTestUserDto: CreateUserDto = {
   login: 'TEST_AUTH_LOGIN', // Dokładnie ten login
-  password: 'Tu6!@#%&',    // Dokładnie to hasło
+  password: 'Tu6!@#%&', // Dokładnie to hasło
 };
 
 describe('Auth Process Diagnostic (e2e)', () => {
@@ -37,7 +37,9 @@ describe('Auth Process Diagnostic (e2e)', () => {
     // Na potrzeby tego testu, jeśli UsersService nie jest czyszczony globalnie,
     // ten użytkownik pozostanie.
     if (createdUserId) {
-      console.log(`[DIAG_TEST] User ${createdUserId} was created. Manual cleanup might be needed if UsersService is not cleared globally.`);
+      console.log(
+        `[DIAG_TEST] User ${createdUserId} was created. Manual cleanup might be needed if UsersService is not cleared globally.`,
+      );
       // Przykład, jak można by próbować usunąć, gdybyśmy mieli token:
       // try {
       //   await request
@@ -61,17 +63,20 @@ describe('Auth Process Diagnostic (e2e)', () => {
       .send(diagnosticUserDto);
 
     console.log('[DIAG_TEST] Signup Response Status:', signupResponse.status);
-    console.log('[DIAG_TEST] Signup Response Body:', JSON.stringify(signupResponse.body, null, 2));
+    console.log(
+      '[DIAG_TEST] Signup Response Body:',
+      JSON.stringify(signupResponse.body, null, 2),
+    );
 
     expect(signupResponse.status).toBe(StatusCodes.CREATED);
-    
+
     const signedUpUser = signupResponse.body as UserWithoutPassword;
     expect(signedUpUser).toBeInstanceOf(Object);
     expect(signedUpUser.id).toBeDefined();
     expect(typeof signedUpUser.id).toBe('string');
     expect(signedUpUser.login).toBe(diagnosticUserDto.login);
     expect(signedUpUser).not.toHaveProperty('password');
-    
+
     createdUserId = signedUpUser.id; // Zapisz ID do ewentualnego cleanupu
 
     // --- Krok 2: Logowanie użytkownika (Login) ---
@@ -87,7 +92,10 @@ describe('Auth Process Diagnostic (e2e)', () => {
       .send(loginDto);
 
     console.log('[DIAG_TEST] Login Response Status:', loginResponse.status);
-    console.log('[DIAG_TEST] Login Response Body:', JSON.stringify(loginResponse.body, null, 2));
+    console.log(
+      '[DIAG_TEST] Login Response Body:',
+      JSON.stringify(loginResponse.body, null, 2),
+    );
 
     expect(loginResponse.status).toBe(StatusCodes.OK);
 
@@ -121,15 +129,24 @@ describe('Auth Process Diagnostic (e2e)', () => {
       login: diagnosticUserDto.login,
       password: 'IncorrectPassword123!',
     };
-    console.log('[DIAG_TEST] Attempting login with incorrect password, DTO:', loginDto);
+    console.log(
+      '[DIAG_TEST] Attempting login with incorrect password, DTO:',
+      loginDto,
+    );
 
     const loginResponse = await request
       .post(authRoutes.login)
       .set(commonHeaders)
       .send(loginDto);
 
-    console.log('[DIAG_TEST] Incorrect Login Response Status:', loginResponse.status);
-    console.log('[DIAG_TEST] Incorrect Login Response Body:', JSON.stringify(loginResponse.body, null, 2));
+    console.log(
+      '[DIAG_TEST] Incorrect Login Response Status:',
+      loginResponse.status,
+    );
+    console.log(
+      '[DIAG_TEST] Incorrect Login Response Body:',
+      JSON.stringify(loginResponse.body, null, 2),
+    );
 
     expect(loginResponse.status).toBe(StatusCodes.UNAUTHORIZED); // Lub FORBIDDEN, zależnie od implementacji AuthService.login
   });
@@ -139,41 +156,59 @@ describe('Auth Process Diagnostic (e2e)', () => {
       login: 'NonExistentUserLogin123',
       password: 'anyPassword',
     };
-    console.log('[DIAG_TEST] Attempting login with non-existent user, DTO:', loginDto);
+    console.log(
+      '[DIAG_TEST] Attempting login with non-existent user, DTO:',
+      loginDto,
+    );
 
     const loginResponse = await request
       .post(authRoutes.login)
       .set(commonHeaders)
       .send(loginDto);
 
-    console.log('[DIAG_TEST] Non-existent User Login Response Status:', loginResponse.status);
-    console.log('[DIAG_TEST] Non-existent User Login Response Body:', JSON.stringify(loginResponse.body, null, 2));
+    console.log(
+      '[DIAG_TEST] Non-existent User Login Response Status:',
+      loginResponse.status,
+    );
+    console.log(
+      '[DIAG_TEST] Non-existent User Login Response Body:',
+      JSON.stringify(loginResponse.body, null, 2),
+    );
 
     expect(loginResponse.status).toBe(StatusCodes.UNAUTHORIZED); // Lub FORBIDDEN, zależnie od implementacji AuthService.login
   });
 
   it('should successfully sign up and log in with TEST_AUTH_LOGIN credentials used by getTokenAndUserId.ts', async () => {
     // --- Krok 1: Rejestracja użytkownika (Signup) z danymi z getTokenAndUserId.ts ---
-    console.log('[DIAG_TEST_TOKEN_UTIL_SIGNUP] Attempting signup with DTO:', getTokenTestUserDto);
+    console.log(
+      '[DIAG_TEST_TOKEN_UTIL_SIGNUP] Attempting signup with DTO:',
+      getTokenTestUserDto,
+    );
     const signupResponse = await request
       .post(authRoutes.signup)
       .set(commonHeaders)
       .send(getTokenTestUserDto);
 
-    console.log('[DIAG_TEST_TOKEN_UTIL_SIGNUP] Signup Response Status:', signupResponse.status);
-    console.log('[DIAG_TEST_TOKEN_UTIL_SIGNUP] Signup Response Body:', JSON.stringify(signupResponse.body, null, 2));
+    console.log(
+      '[DIAG_TEST_TOKEN_UTIL_SIGNUP] Signup Response Status:',
+      signupResponse.status,
+    );
+    console.log(
+      '[DIAG_TEST_TOKEN_UTIL_SIGNUP] Signup Response Body:',
+      JSON.stringify(signupResponse.body, null, 2),
+    );
 
     // Sprawdzamy, czy rejestracja się powiodła (oczekujemy 201 CREATED)
     // Jeśli tu będzie np. 400 BAD_REQUEST, to prawdopodobnie hasło 'Tu6!@#%&' nie przechodzi walidacji DTO.
     expect(signupResponse.status).toBe(StatusCodes.CREATED);
-    
+
     const signedUpUser = signupResponse.body as UserWithoutPassword;
     expect(signedUpUser).toBeInstanceOf(Object);
     expect(signedUpUser.id).toBeDefined();
     expect(typeof signedUpUser.id).toBe('string');
     expect(signedUpUser.login).toBe(getTokenTestUserDto.login);
     expect(signedUpUser).not.toHaveProperty('password');
-    
+
     createdUserId = signedUpUser.id; // Zapisz ID do logowania w afterEach
 
     // --- Krok 2: Logowanie użytkownika (Login) z danymi z getTokenAndUserId.ts ---
@@ -181,19 +216,30 @@ describe('Auth Process Diagnostic (e2e)', () => {
       login: getTokenTestUserDto.login,
       password: getTokenTestUserDto.password,
     };
-    console.log('[DIAG_TEST_TOKEN_UTIL_LOGIN] Attempting login with DTO:', loginDto);
+    console.log(
+      '[DIAG_TEST_TOKEN_UTIL_LOGIN] Attempting login with DTO:',
+      loginDto,
+    );
 
     const loginResponse = await request
       .post(authRoutes.login)
       .set(commonHeaders)
       .send(loginDto);
 
-    console.log('[DIAG_TEST_TOKEN_UTIL_LOGIN] Login Response Status:', loginResponse.status);
-    console.log('[DIAG_TEST_TOKEN_UTIL_LOGIN] Login Response Body:', JSON.stringify(loginResponse.body, null, 2));
+    console.log(
+      '[DIAG_TEST_TOKEN_UTIL_LOGIN] Login Response Status:',
+      loginResponse.status,
+    );
+    console.log(
+      '[DIAG_TEST_TOKEN_UTIL_LOGIN] Login Response Body:',
+      JSON.stringify(loginResponse.body, null, 2),
+    );
 
     expect(loginResponse.status).toBe(StatusCodes.OK);
     expect(loginResponse.body.accessToken).toBeDefined();
     expect(typeof loginResponse.body.accessToken).toBe('string');
-    console.log('[DIAG_TEST_TOKEN_UTIL] Signup and Login with TEST_AUTH_LOGIN credentials successful.');
+    console.log(
+      '[DIAG_TEST_TOKEN_UTIL] Signup and Login with TEST_AUTH_LOGIN credentials successful.',
+    );
   });
 });
