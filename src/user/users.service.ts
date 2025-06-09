@@ -3,32 +3,36 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
-import { User, UserWithoutPassword } from './interfaces/user.interface';
+import { UserWithoutPassword } from './interfaces/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import * as bcrypt from 'bcrypt'; // Import bcrypt
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from '../database/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = []; // In-memory storage
+  constructor(
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
+  ) {}
 
-  findAll(): UserWithoutPassword[] {
-    return this.users.map(({ password: _, ...user }) => user);
+  async findAll(): Promise<UserWithoutPassword[]> {
+    const users = await this.userRepository.find();
+    return users.map((user) => this.toResponse(user));
   }
 
-  findOne(id: string): UserWithoutPassword {
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const user = this.users.find((user) => user.id === id);
+  async findOne(id: string): Promise<UserWithoutPassword> {
+    const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return this.toResponse(user);
   }
 
-  findByLogin(login: string): User {
-    const user = this.users.find((user) => user.login === login);
+  async findByLogin(login: string): Promise<UserEntity> {
+    const user = await this.userRepository.findOneBy({ login });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -36,22 +40,17 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<UserWithoutPassword> {
-    const saltRounds = parseInt(process.env.CRYPT_SALT || '10', 10);
+    const saltRounds = parseInt(process.env.CRYPT_SALT || '10', 10); // Ensure CRYPT_SALT is a string in .env
     const hashedPassword = await bcrypt.hash(
       createUserDto.password,
       saltRounds,
     );
-    const user: User = {
-      id: randomUUID(),
+    const newUser = this.userRepository.create({
       ...createUserDto,
-      password: hashedPassword, // Store the hashed password
-      version: 1,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-    this.users.push(user);
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+      password: hashedPassword,
+    });
+    const savedUser = await this.userRepository.save(newUser);
+    return this.toResponse(savedUser);
   }
 
   async update(
@@ -59,44 +58,39 @@ export class UsersService {
     updatePasswordDto: UpdatePasswordDto,
   ): Promise<UserWithoutPassword> {
     // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const userIndex = this.users.findIndex((user) => user.id === id);
-    if (userIndex === -1) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const user = this.users[userIndex];
     if (!(await bcrypt.compare(updatePasswordDto.oldPassword, user.password))) {
       // Użyj bcrypt.compare do porównania hasła
       throw new ForbiddenException('Old password is wrong');
     }
 
-    const saltRounds = parseInt(process.env.CRYPT_SALT || '10', 10); // Preferuj CRYPT_SALT, potem CRYPT_SALT, potem 10
+    const saltRounds = parseInt(process.env.CRYPT_SALT || '10', 10);
     const hashedNewPassword = await bcrypt.hash(
       updatePasswordDto.newPassword,
       saltRounds,
     );
-    const updatedUser: User = {
-      ...user,
-      password: hashedNewPassword, // Zapisz zahashowane nowe hasło
-      version: user.version + 1,
-      updatedAt: Date.now(),
-    };
 
-    this.users[userIndex] = updatedUser;
-    const { password: _, ...userWithoutPassword } = updatedUser;
-    return userWithoutPassword;
+    user.password = hashedNewPassword;
+    // TypeORM automatycznie zaktualizuje `version` i `updatedAt`
+    const updatedUser = await this.userRepository.save(user);
+    return this.toResponse(updatedUser);
   }
 
-  remove(id: string): void {
+  async remove(id: string): Promise<void> {
     // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const userIndex = this.users.findIndex((user) => user.id === id);
-    if (userIndex === -1) {
+    const result = await this.userRepository.delete(id);
+    if (result.affected === 0) {
       throw new NotFoundException('User not found');
     }
-    this.users.splice(userIndex, 1);
   }
 
-  clearUsers(): void {
-    this.users = []; // Metoda do czyszczenia danych w pamięci (dla testów)
+  // Metoda pomocnicza do mapowania encji na DTO odpowiedzi (bez hasła)
+  private toResponse(user: UserEntity): UserWithoutPassword {
+    const { password, ...rest } = user;
+    return rest;
   }
 }

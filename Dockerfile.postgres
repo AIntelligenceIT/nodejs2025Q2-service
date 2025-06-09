@@ -1,0 +1,7 @@
+# Użyj oficjalnego obrazu PostgreSQL jako bazy
+FROM postgres:16-alpine
+
+# Ustaw zmienne środowiskowe (mogą być również ustawione w docker-compose.yml)
+# ENV POSTGRES_USER your_user
+# ENV POSTGRES_PASSWORD your_password
+# ENV POSTGRES_DB your_database
