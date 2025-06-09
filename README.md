@@ -8,13 +8,14 @@
 ## Downloading
 
 ```
-git clone {repository URL}
+git clone https://github.com/AlanKowalzky/nodejs2025Q2-service.git
+## and git switch develop4
 ```
 
 ## Installing NPM modules
 
 ```
-npm install
+npm install or ## npm ci
 ```
 
 ## Running application
