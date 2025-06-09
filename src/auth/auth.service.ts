@@ -54,16 +54,9 @@ export class AuthService {
 
   async signup(createUserDto: CreateUserDto): Promise<UserWithoutPassword> {
     // Dodano typ zwracany
-    // Tutaj zaimplementuj logikę tworzenia użytkownika, np. przez UsersService
-    // Hashowanie hasła przed zapisem do bazy danych
-    const saltRounds = parseInt(process.env.CRYPT_SALT || '10', 10); // Użyj zmiennej środowiskowej
-    const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
-      saltRounds,
-    ); // Hashowanie hasła
+    // UsersService.create will now handle password hashing
     return this.usersService.create({
       ...createUserDto,
-      password: hashedPassword,
     });
   }
 

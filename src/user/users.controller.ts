@@ -90,13 +90,7 @@ export class UsersController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Unauthorized.',
   })
-  create(@Body() createUserDto: CreateUserDto) {
-    // Walidacja pól (login, password) powinna być obsłużona przez
-    // class-validator w CreateUserDto i globalny ValidationPipe.
-    // Poniższe sprawdzenie jest redundantne, jeśli DTO jest poprawnie zdefiniowane.
-    // if (!createUserDto.login || !createUserDto.password) {
-    //   throw new BadRequestException('Login and password are required');
-    // }
+  async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 

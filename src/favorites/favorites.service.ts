@@ -5,24 +5,22 @@ import {
   forwardRef,
   Inject,
 } from '@nestjs/common';
-// import { PrismaService } from '../prisma/prisma.service'; // Usunięte
 import { ArtistsService } from '../artists/artists.service';
 import { AlbumsService } from '../albums/albums.service';
 import { TracksService } from '../tracks/tracks.service';
 import {
   FavoritesResponse,
   Artist,
-  Track,
+  Track
 } from './interfaces/favorites.interface';
-// Import Album directly from its interface file
 import { Album as AlbumInterface } from '../albums/interfaces/album.interface';
 
 @Injectable()
 export class FavoritesService {
   private favoritesStore: {
-    artists: string[]; // Store IDs
-    albums: string[]; // Store IDs
-    tracks: string[]; // Store IDs
+    artists: string[];
+    albums: string[];
+    tracks: string[];
   } = {
     artists: [],
     albums: [],
@@ -42,31 +40,27 @@ export class FavoritesService {
     const artists: Artist[] = [];
     for (const artistId of this.favoritesStore.artists) {
       try {
-        // Assuming findOne methods are async as per ArtistsService stub
         const artist = await this.artistService.findOne(artistId);
         artists.push(artist);
       } catch (e) {
-        // Artist might have been deleted, ignore or log
       }
     }
 
     const albums: AlbumInterface[] = [];
     for (const albumId of this.favoritesStore.albums) {
       try {
-        const album = await this.albumService.findOne(albumId); // Assuming async
+        const album = await this.albumService.findOne(albumId);
         albums.push(album);
       } catch (e) {
-        // Album might have been deleted
       }
     }
 
     const tracks: Track[] = [];
     for (const trackId of this.favoritesStore.tracks) {
       try {
-        const track = await this.trackService.findOne(trackId); // Assuming async
+        const track = await this.trackService.findOne(trackId);
         tracks.push(track);
       } catch (e) {
-        // Track might have been deleted
       }
     }
     return { artists, albums, tracks };
@@ -78,7 +72,7 @@ export class FavoritesService {
 
   async addTrack(trackId: string): Promise<{ message: string }> {
     try {
-      await this.trackService.findOne(trackId); // Throws NotFoundException if track doesn't exist
+      await this.trackService.findOne(trackId);
       if (!this.favoritesStore.tracks.includes(trackId)) {
         this.favoritesStore.tracks.push(trackId);
       }
@@ -95,7 +89,7 @@ export class FavoritesService {
 
   async addAlbum(albumId: string): Promise<{ message: string }> {
     try {
-      await this.albumService.findOne(albumId); // Throws NotFoundException if album doesn't exist
+      await this.albumService.findOne(albumId);
       if (!this.favoritesStore.albums.includes(albumId)) {
         this.favoritesStore.albums.push(albumId);
       }
@@ -112,7 +106,7 @@ export class FavoritesService {
 
   async addArtist(artistId: string): Promise<{ message: string }> {
     try {
-      await this.artistService.findOne(artistId); // Throws NotFoundException if artist doesn't exist
+      await this.artistService.findOne(artistId);
       if (!this.favoritesStore.artists.includes(artistId)) {
         this.favoritesStore.artists.push(artistId);
       }
@@ -157,7 +151,6 @@ export class FavoritesService {
     this.favoritesStore.artists.splice(index, 1);
   }
 
-  // Methods to be called by other services upon entity deletion
   removeArtistReferences(artistId: string): void {
     const index = this.favoritesStore.artists.indexOf(artistId);
     if (index > -1) {
