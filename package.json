@@ -21,7 +21,19 @@
     "test:refresh": "cross-env TEST_MODE=auth jest --testPathPattern refresh.e2e.spec.ts --noStackTrace --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "typeorm": "typeorm-ts-node-commonjs -d ./src/database/typeorm.config.ts",
+    "migration:generate": "npm run typeorm -- migration:generate",
+    "migration:run": "npm run typeorm -- migration:run",
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up",
+    "docker:down": "docker compose down",
+    "docker:scan": "docker scan alandocke/nodejs2025q2-app:latest && docker scan alandocke/nodejs2025q2-db:latest",
+    "docker:push:app": "docker push alandocke/nodejs2025q2-app:latest",
+    "docker:push:db": "docker push alandocke/nodejs2025q2-db:latest",
+    "scan": "npm audit && npm audit fix --dry-run && npm outdated",
+    "scan:fix": "npm audit fix && npm update"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.16",
