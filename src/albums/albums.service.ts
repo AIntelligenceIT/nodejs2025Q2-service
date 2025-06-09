@@ -4,60 +4,80 @@ import { CreateAlbumDto } from './dto/create-album.dto';
 // import { Prisma } from '@prisma/client'; // Import Prisma type - Usunięte
 import { UpdateAlbumDto } from './dto/update-album.dto';
 // import { PrismaService } from '../prisma/prisma.service'; // Usunięte
-import { randomUUID } from 'crypto';
 import { TracksService } from '../tracks/tracks.service';
 import { FavoritesService } from '../favorites/favorites.service';
-import { forwardRef, Inject } from '@nestjs/common';
+import { forwardRef, Inject, BadRequestException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AlbumEntity } from '../database/entities/album.entity';
+import { Repository } from 'typeorm';
+import { ArtistEntity } from '../database/entities/artist.entity';
 
 @Injectable()
 export class AlbumsService {
-  private albums: Album[] = [];
-
   constructor(
+    @InjectRepository(AlbumEntity)
+    private albumRepository: Repository<AlbumEntity>,
+    @InjectRepository(ArtistEntity) // Potrzebne do znalezienia artysty
+    private artistRepository: Repository<ArtistEntity>,
+    @Inject(forwardRef(() => TracksService))
     private readonly tracksService: TracksService,
     @Inject(forwardRef(() => FavoritesService))
     private readonly favoritesService: FavoritesService,
   ) {}
 
   async create(createAlbumDto: CreateAlbumDto): Promise<Album> {
-    const { artistId, ...restOfDto } = createAlbumDto;
-    const newAlbum: Album = {
-      id: randomUUID(),
-      ...restOfDto,
-      artistId: artistId === undefined ? null : artistId,
-    };
-    this.albums.push(newAlbum);
-    return newAlbum;
+    let artist: ArtistEntity | null = null;
+    if (createAlbumDto.artistId) {
+      artist = await this.artistRepository.findOneBy({ id: createAlbumDto.artistId });
+      if (!artist) {
+        // Można rzucić błąd lub utworzyć album bez artysty, zależnie od logiki biznesowej
+        // Tutaj rzucamy błąd, jeśli podano ID artysty, ale on nie istnieje
+        throw new BadRequestException(`Artist with ID ${createAlbumDto.artistId} not found.`);
+      }
+    }
+    const albumToCreate = this.albumRepository.create({
+      name: createAlbumDto.name,
+      year: createAlbumDto.year,
+      artist: artist, // Przypisz encję artysty lub null
+    });
+    return await this.albumRepository.save(albumToCreate);
   }
 
   async findAll(): Promise<Album[]> {
-    return this.albums;
+    return await this.albumRepository.find({ relations: ['artist'] });
   }
 
   async findOne(id: string): Promise<Album> {
-    const album = this.albums.find((a) => a.id === id);
+    const album = await this.albumRepository.findOne({ where: { id }, relations: ['artist'] });
     if (!album) {
       throw new NotFoundException(`Album with ID ${id} not found`);
     }
     return album;
   }
 
+  async findOneEntity(id: string): Promise<AlbumEntity | null> {
+    return await this.albumRepository.findOneBy({ id });
+  }
+
   async update(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> {
-    const albumIndex = this.albums.findIndex((a) => a.id === id);
-    if (albumIndex === -1) {
+    const album = await this.albumRepository.preload({
+      id: id,
+      ...updateAlbumDto,
+    });
+    if (!album) {
       throw new NotFoundException(`Album with ID ${id} not found`);
     }
-    const updatedAlbum = {
-      ...this.albums[albumIndex],
-      ...updateAlbumDto,
-    };
-    this.albums[albumIndex] = updatedAlbum;
-    return updatedAlbum;
+    if (updateAlbumDto.artistId !== undefined) { // Sprawdź, czy artistId jest aktualizowane
+      album.artist = updateAlbumDto.artistId
+        ? await this.artistRepository.findOneBy({ id: updateAlbumDto.artistId })
+        : null;
+    }
+    return await this.albumRepository.save(album);
   }
 
   async remove(id: string): Promise<void> {
-    const albumIndex = this.albums.findIndex((a) => a.id === id);
-    if (albumIndex === -1) {
+    const album = await this.findOneEntity(id);
+    if (!album) {
       throw new NotFoundException(`Album with ID ${id} not found`);
     }
 
@@ -72,16 +92,17 @@ export class AlbumsService {
         `Attempted to remove non-favorite album ${id} during cleanup or album was already removed from favs.`,
       );
     }
-
-    this.albums.splice(albumIndex, 1);
+    const result = await this.albumRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Album with ID ${id} not found during delete operation`);
+    }
   }
 
-  removeArtist(artistId: string): void {
-    this.albums = this.albums.map((album) => {
-      if (album.artistId === artistId) {
-        return { ...album, artistId: null };
-      }
-      return album;
-    });
+  async removeArtistReferences(artistId: string): Promise<void> {
+    // Ta metoda jest wywoływana, gdy artysta jest usuwany
+    // Ustawia artistId na null dla wszystkich albumów tego artysty
+    // Zgodnie z onDelete: 'SET NULL' w encji AlbumEntity, to powinno dziać się automatycznie
+    // jeśli usuwamy artystę. Jeśli jednak chcemy to zrobić manualnie:
+    await this.albumRepository.update({ artist: { id: artistId } }, { artist: null });
   }
 }

@@ -1,64 +1,90 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { Injectable, NotFoundException, BadRequestException, forwardRef, Inject } from '@nestjs/common';
 import { Track } from './interfaces/track.interface';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { FavoritesService } from '../favorites/favorites.service';
-import { forwardRef, Inject } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TrackEntity } from '../database/entities/track.entity';
+import { Repository } from 'typeorm';
+import { ArtistEntity } from '../database/entities/artist.entity';
+import { AlbumEntity } from '../database/entities/album.entity';
 
 @Injectable()
 export class TracksService {
-  private tracks: Track[] = [];
-
   constructor(
+    @InjectRepository(TrackEntity)
+    private trackRepository: Repository<TrackEntity>,
+    @InjectRepository(ArtistEntity) // Potrzebne do znalezienia artysty
+    private artistRepository: Repository<ArtistEntity>,
+    @InjectRepository(AlbumEntity) // Potrzebne do znalezienia albumu
+    private albumRepository: Repository<AlbumEntity>,
     @Inject(forwardRef(() => FavoritesService))
     private readonly favoritesService: FavoritesService,
   ) {}
 
   async findAll(): Promise<Track[]> {
-    return this.tracks; // Dodano typ zwracany
+    return await this.trackRepository.find({ relations: ['artist', 'album'] });
   }
 
   async findOne(id: string): Promise<Track> {
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const track = this.tracks.find((track) => track.id === id);
+    const track = await this.trackRepository.findOne({ where: { id }, relations: ['artist', 'album'] });
     if (!track) {
       throw new NotFoundException('Track not found');
     }
     return track;
   }
+
+  async findOneEntity(id: string): Promise<TrackEntity | null> {
+    return await this.trackRepository.findOneBy({ id });
+  }
+
   async create(createTrackDto: CreateTrackDto): Promise<Track> {
-    // Dodano typ zwracany
-    // Walidacja DTO jest obsługiwana przez ValidationPipe
-    const track: Track = {
-      id: randomUUID(),
-      ...createTrackDto,
-    };
-    this.tracks.push(track);
-    return track;
+    let artist: ArtistEntity | null = null;
+    if (createTrackDto.artistId) {
+      artist = await this.artistRepository.findOneBy({ id: createTrackDto.artistId });
+      if (!artist) throw new BadRequestException(`Artist with ID ${createTrackDto.artistId} not found.`);
+    }
+    let album: AlbumEntity | null = null;
+    if (createTrackDto.albumId) {
+      album = await this.albumRepository.findOneBy({ id: createTrackDto.albumId });
+      if (!album) throw new BadRequestException(`Album with ID ${createTrackDto.albumId} not found.`);
+    }
+
+    const trackToCreate = this.trackRepository.create({
+      name: createTrackDto.name,
+      duration: createTrackDto.duration,
+      artist: artist,
+      album: album,
+    });
+    return await this.trackRepository.save(trackToCreate);
   }
 
   async update(id: string, updateTrackDto: UpdateTrackDto): Promise<Track> {
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const trackIndex = this.tracks.findIndex((track) => track.id === id);
-    if (trackIndex === -1) {
+    const track = await this.trackRepository.preload({
+      id: id,
+      ...updateTrackDto, // name, duration
+    });
+    if (!track) {
       throw new NotFoundException('Track not found');
     }
-    // Walidacja DTO jest obsługiwana przez ValidationPipe
-    const updatedTrack: Track = {
-      ...this.tracks[trackIndex],
-      ...updateTrackDto,
-    };
 
-    this.tracks[trackIndex] = updatedTrack;
-    return updatedTrack;
+    if (updateTrackDto.artistId !== undefined) {
+      track.artist = updateTrackDto.artistId
+        ? await this.artistRepository.findOneBy({ id: updateTrackDto.artistId })
+        : null;
+    }
+    if (updateTrackDto.albumId !== undefined) {
+      track.album = updateTrackDto.albumId
+        ? await this.albumRepository.findOneBy({ id: updateTrackDto.albumId })
+        : null;
+    }
+
+    return await this.trackRepository.save(track);
   }
 
   async remove(id: string): Promise<void> {
-    // Dodano typ zwracany
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
-    const trackIndex = this.tracks.findIndex((track) => track.id === id);
-    if (trackIndex === -1) {
+    const track = await this.findOneEntity(id);
+    if (!track) {
       throw new NotFoundException('Track not found');
     }
     // Remove from favorites
@@ -69,25 +95,23 @@ export class TracksService {
         `Attempted to remove non-favorite track ${id} during cleanup or track was already removed from favs.`,
       );
     }
-    this.tracks.splice(trackIndex, 1);
+    const result = await this.trackRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Track with ID ${id} not found during delete operation`);
+    }
   }
 
-  removeArtist(artistId: string): void {
-    // Dodano typ zwracany
-    this.tracks = this.tracks.map((track) => {
-      if (track.artistId === artistId) {
-        return { ...track, artistId: null };
-      }
-      return track;
-    });
+  async removeArtistReferences(artistId: string): Promise<void> {
+    // Ustawia artistId na null dla wszystkich utworów tego artysty
+    // Zgodnie z onDelete: 'SET NULL' w encji TrackEntity, to powinno dziać się automatycznie
+    // jeśli usuwamy artystę. Jeśli jednak chcemy to zrobić manualnie:
+    await this.trackRepository.update({ artist: { id: artistId } }, { artist: null });
   }
 
-  removeAlbumAssociation(albumId: string): void {
-    this.tracks = this.tracks.map((track) => {
-      if (track.albumId === albumId) {
-        return { ...track, albumId: null };
-      }
-      return track;
-    });
+  async removeAlbumAssociation(albumId: string): Promise<void> {
+    // Ustawia albumId na null dla wszystkich utworów z tego albumu
+    // Zgodnie z onDelete: 'SET NULL' w encji TrackEntity, to powinno dziać się automatycznie
+    // jeśli usuwamy album. Jeśli jednak chcemy to zrobić manualnie:
+    await this.trackRepository.update({ album: { id: albumId } }, { album: null });
   }
 }
