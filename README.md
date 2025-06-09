@@ -1,73 +1,87 @@
-# Home Library Service
+# 🎵 Home Library Service
 
-## Prerequisites
+A music library management system to manage users, artists, albums, tracks, and favorites.
 
-- Git - [Download & Install Git](https://git-scm.com/downloads).
-- Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
+## 📦 Prerequisites
 
-## Downloading
+- [Git](https://git-scm.com/)
+- [Docker](https://www.docker.com/)
 
-```
+## 🚀 Getting Started
+
+### 1. Clone the repository
+
+```bash
 git clone https://github.com/AlanKowalzky/nodejs2025Q2-service.git
-## and git switch develop4
+cd nodejs2025Q2-service
+git checkout develop_part2
 ```
 
-## Installing NPM modules
+### 2. Create `.env` file
 
+```env
+PORT=4000
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=your_user
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=your_database
 ```
-npm install or ## npm ci
+
+### 3. Build & Run the App
+
+```bash
+docker compose build
+docker compose up
 ```
 
-## Running application
+- App runs at: [http://localhost:4000](http://localhost:4000)  
+- Stop with: `docker compose down`
 
-```
-npm start
-```
+## ✅ Testing
 
-After starting the app on port (4000 as default) you can open
-in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
-
-## Testing
-
-After application running open new terminal and enter:
-
-To run all tests without authorization
-
-```
+```bash
 npm run test
 ```
 
-To run only one of all test suites
+## 📘 API Docs
 
-```
-npm run test -- <path to suite>
-```
+- Swagger UI: [http://localhost:4000/doc](http://localhost:4000/doc)
 
-To run all test with authorization
+## 🧹 Code Quality
 
-```
-npm run test:auth
-```
-
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
+```bash
+npm run lint     # Check code style
+npm run format   # Format code
 ```
 
-### Auto-fix and format
+## 🔐 Security
 
-```
-npm run lint
-```
-
-```
-npm run format
+```bash
+npm run scan      # Check vulnerabilities
+npm run scan:fix  # Fix and update packages
 ```
 
-### Debugging in VSCode
+## 💡 Features
 
-Press <kbd>F5</kbd> to debug.
+### Users
+- Create, read, update password, delete
 
-For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+### Artists / Albums / Tracks
+- Full CRUD operations
+
+### Favorites
+- Add/remove tracks, albums, artists
+
+## ⚙️ Implementation
+
+- PostgreSQL for data storage
+- UUIDs for all IDs
+- Deleted items removed from favorites and references set to `null`
+- All API requests/responses in JSON
+- Passwords excluded from responses
+
+## 🛠 Stack
+
+- Node.js, NestJS, TypeScript  
+- class-validator, Swagger/OpenAPI
