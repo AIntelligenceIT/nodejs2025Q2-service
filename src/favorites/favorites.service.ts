@@ -11,7 +11,7 @@ import { TracksService } from '../tracks/tracks.service';
 import {
   FavoritesResponse,
   Artist,
-  Track
+  Track,
 } from './interfaces/favorites.interface';
 import { Album as AlbumInterface } from '../albums/interfaces/album.interface';
 
@@ -42,8 +42,7 @@ export class FavoritesService {
       try {
         const artist = await this.artistService.findOne(artistId);
         artists.push(artist);
-      } catch (e) {
-      }
+      } catch (e) {}
     }
 
     const albums: AlbumInterface[] = [];
@@ -51,8 +50,7 @@ export class FavoritesService {
       try {
         const album = await this.albumService.findOne(albumId);
         albums.push(album);
-      } catch (e) {
-      }
+      } catch (e) {}
     }
 
     const tracks: Track[] = [];
@@ -60,8 +58,7 @@ export class FavoritesService {
       try {
         const track = await this.trackService.findOne(trackId);
         tracks.push(track);
-      } catch (e) {
-      }
+      } catch (e) {}
     }
     return { artists, albums, tracks };
   }
