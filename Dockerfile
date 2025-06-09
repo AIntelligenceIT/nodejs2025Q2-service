@@ -18,7 +18,7 @@ RUN npm ci
 COPY . .
 # Jeśli masz pliki .env specyficzne dla budowania (np. .env.build), skopiuj je tutaj
 
-# Buduj aplikację
+# Buduj aplik
 RUN npm run build
 
 # Etap 2: Uruchamianie aplikacji
