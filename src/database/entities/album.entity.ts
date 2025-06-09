@@ -19,9 +19,14 @@ export class AlbumEntity {
   @Column()
   year: number;
 
-  @ManyToOne(() => ArtistEntity, (artist) => artist.albums, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => ArtistEntity, (artist) => artist.albums, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   artist: ArtistEntity | null;
 
-  @OneToMany(() => TrackEntity, (track) => track.album, { onDelete: 'SET NULL' })
+  @OneToMany(() => TrackEntity, (track) => track.album, {
+    onDelete: 'SET NULL',
+  })
   tracks: TrackEntity[];
 }

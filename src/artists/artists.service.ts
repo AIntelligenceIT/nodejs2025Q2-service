@@ -96,7 +96,9 @@ export class ArtistsService {
 
     const result = await this.artistRepository.delete(id);
     if (result.affected === 0) {
-      throw new NotFoundException(`Artist with ID ${id} not found during delete operation`);
+      throw new NotFoundException(
+        `Artist with ID ${id} not found during delete operation`,
+      );
     }
   }
 }

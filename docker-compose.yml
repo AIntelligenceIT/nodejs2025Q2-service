@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: home-library-app
     ports:
-      - "${APP_PORT:-4000}:${APP_PORT:-4000}" 
+      - "${APP_PORT:-4000}:${APP_PORT:-4000}"
     env_file:
       - .env
     depends_on:
@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:15-alpine  # zamiast build z Dockerfile.postgres lepiej użyć oficjalnego obrazu
+    image: alandocke/nodejs2025q2-db:latest
     container_name: home-library-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
@@ -28,6 +28,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-homelibrary}"]
       interval: 10s

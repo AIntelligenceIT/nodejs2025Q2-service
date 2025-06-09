@@ -13,9 +13,13 @@ export class ArtistEntity {
   @Column()
   grammy: boolean;
 
-  @OneToMany(() => AlbumEntity, (album) => album.artist, { onDelete: 'SET NULL' })
+  @OneToMany(() => AlbumEntity, (album) => album.artist, {
+    onDelete: 'SET NULL',
+  })
   albums: AlbumEntity[];
 
-  @OneToMany(() => TrackEntity, (track) => track.artist, { onDelete: 'SET NULL' })
+  @OneToMany(() => TrackEntity, (track) => track.artist, {
+    onDelete: 'SET NULL',
+  })
   tracks: TrackEntity[];
 }

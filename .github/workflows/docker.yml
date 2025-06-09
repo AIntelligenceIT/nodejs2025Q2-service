@@ -1,9 +1,9 @@
-name: Build and Push Docker image
+name: Build and Push Docker images
 
 on:
   push:
     branches:
-      - develop_part2  # Twoja gałąź zamiast main
+      - develop_part2  # gałąź do automatycznego builda
 
 jobs:
   build-and-push:
@@ -15,8 +15,16 @@ jobs:
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/nodejs2025q2-service:latest .
+      # Build and push APP image
+      - name: Build app Docker image
+        run: docker build -t alandocke/nodejs2025q2-service:latest -f Dockerfile .
 
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/nodejs2025q2-service:latest
+      - name: Push app Docker image
+        run: docker push alandocke/nodejs2025q2-service:latest
+
+      # Build and push DB image
+      - name: Build database Docker image
+        run: docker build -t alandocke/nodejs2025q2-db:latest -f Dockerfile.postgres .
+
+      - name: Push database Docker image
+        run: docker push alandocke/nodejs2025q2-db:latest

@@ -34,15 +34,27 @@ import { FavoritesEntity } from './database/entities/favorites.entity';
         const database = configService.get<string>('POSTGRES_DB');
         const nodeEnv = configService.get<string>('NODE_ENV');
 
-        console.log(`[AppModule] POSTGRES_HOST: ${host} (type: ${typeof host})`);
-        console.log(`[AppModule] POSTGRES_PORT: ${portStr} (type: ${typeof portStr})`);
-        console.log(`[AppModule] POSTGRES_USER: ${username} (type: ${typeof username})`);
+        console.log(
+          `[AppModule] POSTGRES_HOST: ${host} (type: ${typeof host})`,
+        );
+        console.log(
+          `[AppModule] POSTGRES_PORT: ${portStr} (type: ${typeof portStr})`,
+        );
+        console.log(
+          `[AppModule] POSTGRES_USER: ${username} (type: ${typeof username})`,
+        );
         console.log(`[AppModule] POSTGRES_PASSWORD_PRESENT: ${!!password}`);
-        console.log(`[AppModule] POSTGRES_DB: ${database} (type: ${typeof database})`);
-        console.log(`[AppModule] NODE_ENV: ${nodeEnv} (type: ${typeof nodeEnv})`);
+        console.log(
+          `[AppModule] POSTGRES_DB: ${database} (type: ${typeof database})`,
+        );
+        console.log(
+          `[AppModule] NODE_ENV: ${nodeEnv} (type: ${typeof nodeEnv})`,
+        );
 
         if (!host || !portStr || !username || !password || !database) {
-          console.error('[AppModule] CRITICAL: One or more database connection parameters are missing from .env!');
+          console.error(
+            '[AppModule] CRITICAL: One or more database connection parameters are missing from .env!',
+          );
           // Możesz rzucić błąd tutaj, aby zatrzymać aplikację, jeśli parametry są krytyczne
           // throw new Error('Missing database configuration parameters');
         }
