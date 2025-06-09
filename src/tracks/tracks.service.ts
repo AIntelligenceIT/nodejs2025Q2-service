@@ -23,7 +23,8 @@ export class TracksService {
   ) {}
 
   async findAll(): Promise<Track[]> {
-    return await this.trackRepository.find({ relations: ['artist', 'album'] });
+    const tracks = await this.trackRepository.find({ relations: ['artist', 'album'] });
+    return tracks.map(track => this.toResponse(track));
   }
 
   async findOne(id: string): Promise<Track> {
@@ -31,7 +32,7 @@ export class TracksService {
     if (!track) {
       throw new NotFoundException('Track not found');
     }
-    return track;
+    return this.toResponse(track);
   }
 
   async findOneEntity(id: string): Promise<TrackEntity | null> {
@@ -56,17 +57,20 @@ export class TracksService {
       artist: artist,
       album: album,
     });
-    return await this.trackRepository.save(trackToCreate);
+    const savedTrack = await this.trackRepository.save(trackToCreate);
+    return this.toResponse(savedTrack);
   }
 
   async update(id: string, updateTrackDto: UpdateTrackDto): Promise<Track> {
-    const track = await this.trackRepository.preload({
+    let track = await this.trackRepository.findOne({ where: {id}, relations: ['artist', 'album']});
+    if (!track) {
+      throw new NotFoundException(`Track with ID ${id} not found`);
+    }
+
+    track = this.trackRepository.merge(track, {
       id: id,
       ...updateTrackDto, // name, duration
     });
-    if (!track) {
-      throw new NotFoundException('Track not found');
-    }
 
     if (updateTrackDto.artistId !== undefined) {
       track.artist = updateTrackDto.artistId
@@ -79,7 +83,8 @@ export class TracksService {
         : null;
     }
 
-    return await this.trackRepository.save(track);
+    const updatedTrack = await this.trackRepository.save(track);
+    return this.toResponse(updatedTrack);
   }
 
   async remove(id: string): Promise<void> {
@@ -87,7 +92,6 @@ export class TracksService {
     if (!track) {
       throw new NotFoundException('Track not found');
     }
-    // Remove from favorites
     try {
       await this.favoritesService.removeTrackReferences(id);
     } catch (error) {
@@ -102,16 +106,20 @@ export class TracksService {
   }
 
   async removeArtistReferences(artistId: string): Promise<void> {
-    // Ustawia artistId na null dla wszystkich utworów tego artysty
-    // Zgodnie z onDelete: 'SET NULL' w encji TrackEntity, to powinno dziać się automatycznie
-    // jeśli usuwamy artystę. Jeśli jednak chcemy to zrobić manualnie:
     await this.trackRepository.update({ artist: { id: artistId } }, { artist: null });
   }
 
   async removeAlbumAssociation(albumId: string): Promise<void> {
-    // Ustawia albumId na null dla wszystkich utworów z tego albumu
-    // Zgodnie z onDelete: 'SET NULL' w encji TrackEntity, to powinno dziać się automatycznie
-    // jeśli usuwamy album. Jeśli jednak chcemy to zrobić manualnie:
     await this.trackRepository.update({ album: { id: albumId } }, { album: null });
+  }
+
+  private toResponse(trackEntity: TrackEntity): Track {
+    return {
+      id: trackEntity.id,
+      name: trackEntity.name,
+      duration: trackEntity.duration,
+      artistId: trackEntity.artist ? trackEntity.artist.id : null,
+      albumId: trackEntity.album ? trackEntity.album.id : null,
+    };
   }
 }

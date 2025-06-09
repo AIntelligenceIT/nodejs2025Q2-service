@@ -40,11 +40,13 @@ export class AlbumsService {
       year: createAlbumDto.year,
       artist: artist, // Przypisz encję artysty lub null
     });
-    return await this.albumRepository.save(albumToCreate);
+    const savedAlbum = await this.albumRepository.save(albumToCreate);
+    return this.toResponse(savedAlbum);
   }
 
   async findAll(): Promise<Album[]> {
-    return await this.albumRepository.find({ relations: ['artist'] });
+    const albums = await this.albumRepository.find({ relations: ['artist'] });
+    return albums.map(album => this.toResponse(album));
   }
 
   async findOne(id: string): Promise<Album> {
@@ -52,7 +54,7 @@ export class AlbumsService {
     if (!album) {
       throw new NotFoundException(`Album with ID ${id} not found`);
     }
-    return album;
+    return this.toResponse(album);
   }
 
   async findOneEntity(id: string): Promise<AlbumEntity | null> {
@@ -60,19 +62,28 @@ export class AlbumsService {
   }
 
   async update(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> {
-    const album = await this.albumRepository.preload({
-      id: id,
-      ...updateAlbumDto,
-    });
+    // Najpierw pobierz encję, aby upewnić się, że istnieje i załadować relację, jeśli jest potrzebna do aktualizacji
+    let album = await this.albumRepository.findOne({ where: {id}, relations: ['artist']});
     if (!album) {
       throw new NotFoundException(`Album with ID ${id} not found`);
     }
+
+    // Zastosuj zmiany z DTO
+    album = this.albumRepository.merge(album, {
+      id: id,
+      ...updateAlbumDto,
+    });
+
     if (updateAlbumDto.artistId !== undefined) { // Sprawdź, czy artistId jest aktualizowane
       album.artist = updateAlbumDto.artistId
         ? await this.artistRepository.findOneBy({ id: updateAlbumDto.artistId })
         : null;
+      if (updateAlbumDto.artistId && !album.artist) {
+        throw new BadRequestException(`Artist with ID ${updateAlbumDto.artistId} not found for update.`);
+      }
     }
-    return await this.albumRepository.save(album);
+    const updatedAlbum = await this.albumRepository.save(album);
+    return this.toResponse(updatedAlbum);
   }
 
   async remove(id: string): Promise<void> {
@@ -104,5 +115,14 @@ export class AlbumsService {
     // Zgodnie z onDelete: 'SET NULL' w encji AlbumEntity, to powinno dziać się automatycznie
     // jeśli usuwamy artystę. Jeśli jednak chcemy to zrobić manualnie:
     await this.albumRepository.update({ artist: { id: artistId } }, { artist: null });
+  }
+
+  private toResponse(albumEntity: AlbumEntity): Album {
+    return {
+      id: albumEntity.id,
+      name: albumEntity.name,
+      year: albumEntity.year,
+      artistId: albumEntity.artist ? albumEntity.artist.id : null,
+    };
   }
 }

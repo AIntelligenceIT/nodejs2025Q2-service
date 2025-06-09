@@ -90,7 +90,11 @@ export class UsersService {
 
   // Metoda pomocnicza do mapowania encji na DTO odpowiedzi (bez hasła)
   private toResponse(user: UserEntity): UserWithoutPassword {
-    const { password, ...rest } = user;
-    return rest;
+    const { password: _, ...restOfUser } = user;
+    return {
+      ...restOfUser,
+      createdAt: user.createdAt.getTime(), // Konwertuj Date na number (timestamp)
+      updatedAt: user.updatedAt.getTime(), // Konwertuj Date na number (timestamp)
+    };
   }
 }

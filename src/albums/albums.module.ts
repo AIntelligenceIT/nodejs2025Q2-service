@@ -6,10 +6,12 @@ import { TracksModule } from '../tracks/tracks.module'; // Import TracksModule
 import { FavoritesModule } from '../favorites/favorites.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AlbumEntity } from '../database/entities/album.entity';
+import { ArtistEntity } from '../database/entities/artist.entity'; // Import ArtistEntity
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AlbumEntity]),
+    TypeOrmModule.forFeature([ArtistEntity]), // Dodaj ArtistEntityRepository do AlbumsModule
     forwardRef(() => ArtistsModule),
     forwardRef(() => TracksModule),
     forwardRef(() => FavoritesModule),
