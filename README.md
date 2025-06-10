@@ -14,7 +14,7 @@ A music library management system to manage users, artists, albums, tracks, and 
 ```bash
 git clone https://github.com/AlanKowalzky/nodejs2025Q2-service.git
 cd nodejs2025Q2-service
-git checkout develop_part2
+git checkout develop_part2b
 ```
 
 ### 2. Create `.env` file
@@ -23,9 +23,9 @@ git checkout develop_part2
 PORT=4000
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_USER=your_user
-POSTGRES_PASSWORD=your_password
-POSTGRES_DB=your_database
+POSTGRES_USER=twoj_uzytkownik
+POSTGRES_PASSWORD=haselko
+POSTGRES_DB=twoja_baza_danych
 ```
 
 ### 3. Build & Run the App
