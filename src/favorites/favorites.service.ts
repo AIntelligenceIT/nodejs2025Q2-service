@@ -8,18 +8,10 @@ import {
 import { ArtistsService } from '../artists/artists.service';
 import { AlbumsService } from '../albums/albums.service';
 import { TracksService } from '../tracks/tracks.service';
-import {
-  FavoritesResponse,
-  Artist,
-  Track,
-} from './interfaces/favorites.interface';
-import { Album as AlbumInterface } from '../albums/interfaces/album.interface';
+import { FavoritesResponse } from './interfaces/favorites.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FavoritesEntity } from '../database/entities/favorites.entity';
 import { Repository } from 'typeorm';
-import { ArtistEntity } from '../database/entities/artist.entity';
-import { AlbumEntity } from '../database/entities/album.entity';
-import { TrackEntity } from '../database/entities/track.entity';
 
 @Injectable()
 export class FavoritesService {
@@ -46,7 +38,7 @@ export class FavoritesService {
         'albums.artist', // Ładuj zachłannie artystę dla każdego albumu
         'tracks',
         'tracks.artist', // Ładuj zachłannie artystę dla każdego utworu
-        'tracks.album',  // Ładuj zachłannie album dla każdego utworu
+        'tracks.album', // Ładuj zachłannie album dla każdego utworu
       ],
     });
     if (!favorites) {
