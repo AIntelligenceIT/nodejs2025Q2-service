@@ -40,7 +40,14 @@ export class FavoritesService {
   private async getOrCreateFavorites(): Promise<FavoritesEntity> {
     let favorites = await this.favoritesRepository.findOne({
       where: { id: this.favoritesId },
-      relations: ['artists', 'albums', 'tracks'],
+      relations: [
+        'artists',
+        'albums',
+        'albums.artist', // Ładuj zachłannie artystę dla każdego albumu
+        'tracks',
+        'tracks.artist', // Ładuj zachłannie artystę dla każdego utworu
+        'tracks.album',  // Ładuj zachłannie album dla każdego utworu
+      ],
     });
     if (!favorites) {
       favorites = this.favoritesRepository.create({
