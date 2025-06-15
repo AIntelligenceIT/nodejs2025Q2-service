@@ -10,6 +10,8 @@ services:
       - "${APP_PORT:-4000}:${APP_PORT:-4000}"
     env_file:
       - .env
+    environment:
+      POSTGRES_HOST: db # Override POSTGRES_HOST from .env for the app container
     depends_on:
       db:
         condition: service_healthy
@@ -22,6 +24,7 @@ services:
     container_name: home-library-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_HOST: db 
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-homelibrary}
     ports:
