@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  ConflictException, // Dodano ConflictException
   ForbiddenException,
 } from '@nestjs/common';
 import { UserWithoutPassword } from './interfaces/user.interface';
@@ -40,9 +41,19 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<UserWithoutPassword> {
-    const saltRounds = parseInt(process.env.CRYPT_SALT || '10', 10); // Ensure CRYPT_SALT is a string in .env
+    const { login, password } = createUserDto; // Destrukturyzacja dla łatwiejszego dostępu
+
+    // Sprawdź, czy użytkownik o danym loginie już istnieje
+    const existingUser = await this.userRepository.findOne({
+      where: { login },
+    });
+    if (existingUser) {
+      throw new ConflictException(`User with login '${login}' already exists`);
+    }
+
+    const saltRounds = parseInt(process.env.CRYPT_SALT || '10', 10);
     const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
+      password, // Użyj zdestrukturyzowanej zmiennej password
       saltRounds,
     );
     const newUser = this.userRepository.create({
