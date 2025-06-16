@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_HOST: db # Override POSTGRES_HOST from .env for the app container
+      POSTGRES_HOST: db
     depends_on:
       db:
         condition: service_healthy

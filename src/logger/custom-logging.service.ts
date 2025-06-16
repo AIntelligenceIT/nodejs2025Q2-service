@@ -1,8 +1,13 @@
-import { Injectable, ConsoleLogger, LoggerService, LogLevel } from '@nestjs/common';
+import {
+  Injectable,
+  ConsoleLogger,
+  LoggerService,
+  LogLevel,
+} from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Definicja mapowania nazw poziomów na wartości numeryczne
+// Definition of log level name to numeric value mapping
 const LOG_LEVEL_VALUES: Record<string, number> = {
   error: 1,
   warn: 2,
@@ -12,9 +17,13 @@ const LOG_LEVEL_VALUES: Record<string, number> = {
 };
 
 @Injectable()
-export class CustomLoggingService extends ConsoleLogger implements LoggerService {
+export class CustomLoggingService
+  extends ConsoleLogger
+  implements LoggerService
+{
   private currentLogLevel: number;
   private logFilePath: string;
+  private errorLogFilePath: string;
   private maxFileSizeKB: number;
   private maxFiles: number;
   private logDir: string;
@@ -22,8 +31,13 @@ export class CustomLoggingService extends ConsoleLogger implements LoggerService
   constructor() {
     super();
     this.currentLogLevel = parseInt(process.env.LOG_LEVEL, 10) || 3;
-    this.logFilePath = process.env.LOG_FILE_PATH || path.join(process.cwd(), 'logs', 'app.log');
-    this.maxFileSizeKB = parseInt(process.env.LOG_FILE_MAX_SIZE_KB, 10) || 10240; // 10MB
+    this.logFilePath =
+      process.env.LOG_FILE_PATH || path.join(process.cwd(), 'logs', 'app.log');
+    this.errorLogFilePath =
+      process.env.LOG_ERROR_FILE_PATH ||
+      path.join(process.cwd(), 'logs', 'error.log');
+    this.maxFileSizeKB =
+      parseInt(process.env.LOG_FILE_MAX_SIZE_KB, 10) || 10240; // 10MB
     this.maxFiles = parseInt(process.env.LOG_MAX_FILES, 10) || 5;
     this.logDir = path.dirname(this.logFilePath);
 
@@ -43,53 +57,79 @@ export class CustomLoggingService extends ConsoleLogger implements LoggerService
     return levels;
   }
 
-  protected formatMessage(level: string, message: any, context?: string, stack?: string): string {
+  protected formatMessage(
+    level: string,
+    message: any,
+    context?: string,
+    stack?: string,
+  ): string {
     const pid = process.pid;
     const timestamp = new Date().toISOString();
     const contextMessage = context ? `[${context}] ` : '';
     const stackMessage = stack ? `\nStack: ${stack}` : '';
-    // Sprawdzamy, czy 'message' jest obiektem i serializujemy, jeśli tak
-    const formattedMessage = typeof message === 'object' ? JSON.stringify(message, null, 2) : message;
+    // Check if 'message' is an object and serialize if it is
+    const formattedMessage =
+      typeof message === 'object' ? JSON.stringify(message, null, 2) : message;
     return `[${timestamp}] [${level.toUpperCase()}] [PID:${pid}] ${contextMessage}${formattedMessage}${stackMessage}\n`;
   }
 
-  private writeToFile(formattedMessage: string) {
+  private writeToFile(formattedMessage: string, isError: boolean = false) {
     try {
-      this.rotateLogFiles();
-      fs.appendFileSync(this.logFilePath, formattedMessage);
+      this.rotateLogFiles(isError);
+      const targetPath = isError ? this.errorLogFilePath : this.logFilePath;
+      fs.appendFileSync(targetPath, formattedMessage);
     } catch (error) {
-      // Jeśli zapis do pliku zawiedzie, zaloguj błąd do konsoli
-      super.error(`Failed to write to log file: ${error.message}`, error.stack, 'LoggingServiceFileError');
+      // If writing to file fails, log error to console
+      super.error(
+        `Failed to write to log file: ${error.message}`,
+        error.stack,
+        'LoggingServiceFileError',
+      );
     }
   }
 
-  private rotateLogFiles() {
+  private rotateLogFiles(isError: boolean = false) {
     try {
-      if (!fs.existsSync(this.logFilePath)) {
+      const targetPath = isError ? this.errorLogFilePath : this.logFilePath;
+      if (!fs.existsSync(targetPath)) {
         return;
       }
 
-      const fileSizeInBytes = fs.statSync(this.logFilePath).size;
+      const fileSizeInBytes = fs.statSync(targetPath).size;
       const fileSizeInKB = fileSizeInBytes / 1024;
 
       if (fileSizeInKB >= this.maxFileSizeKB) {
-        // Usuń najstarszy plik, jeśli przekroczono maxFiles
-        const oldLogPath = path.join(this.logDir, `app.${this.maxFiles -1}.log`);
+        // Remove oldest file if maxFiles is exceeded
+        const prefix = isError ? 'error' : 'app';
+        const oldLogPath = path.join(
+          this.logDir,
+          `${prefix}.${this.maxFiles - 1}.log`,
+        );
         if (fs.existsSync(oldLogPath)) {
           fs.unlinkSync(oldLogPath);
         }
 
-        // Przesuń istniejące zarchiwizowane pliki
+        // Move existing archived files
         for (let i = this.maxFiles - 2; i >= 0; i--) {
-          const currentRotatedPath = path.join(this.logDir, `app${i === 0 ? '' : `.${i}`}.log`);
-          const nextRotatedPath = path.join(this.logDir, `app.${i + 1}.log`);
+          const currentRotatedPath = path.join(
+            this.logDir,
+            `${prefix}${i === 0 ? '' : `.${i}`}.log`,
+          );
+          const nextRotatedPath = path.join(
+            this.logDir,
+            `${prefix}.${i + 1}.log`,
+          );
           if (fs.existsSync(currentRotatedPath)) {
             fs.renameSync(currentRotatedPath, nextRotatedPath);
           }
         }
       }
     } catch (error) {
-      super.error(`Failed to rotate log files: ${error.message}`, error.stack, 'LoggingServiceRotationError');
+      super.error(
+        `Failed to rotate log files: ${error.message}`,
+        error.stack,
+        'LoggingServiceRotationError',
+      );
     }
   }
 
@@ -101,9 +141,16 @@ export class CustomLoggingService extends ConsoleLogger implements LoggerService
   }
 
   error(message: any, stack?: string, context?: string) {
-     if (this.currentLogLevel >= LOG_LEVEL_VALUES.error) {
+    if (this.currentLogLevel >= LOG_LEVEL_VALUES.error) {
       super.error(message, stack, context);
-      this.writeToFile(this.formatMessage('error', message, context, stack));
+      const formattedMessage = this.formatMessage(
+        'error',
+        message,
+        context,
+        stack,
+      );
+      this.writeToFile(formattedMessage, true); // Write to error log file
+      this.writeToFile(formattedMessage, false); // Write to main log file
     }
   }
 

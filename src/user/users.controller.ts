@@ -125,7 +125,7 @@ export class UsersController {
     // if (!updatePasswordDto.oldPassword || !updatePasswordDto.newPassword) {
     //   throw new BadRequestException('Old password and new password are required');
     // }
-    return this.usersService.update(id, updatePasswordDto);
+    return this.usersService.updatePassword(id, updatePasswordDto);
   }
 
   @Delete(':id')

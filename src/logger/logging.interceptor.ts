@@ -34,12 +34,17 @@ export class LoggingInterceptor implements NestInterceptor {
           url,
           status: response.statusCode,
           durationMs: Date.now() - now,
-          // Logowanie 'data' (ciała odpowiedzi) - tylko jeśli jest zdefiniowane, nie jest stringiem i nie jest zbyt duże
-          ...(data !== undefined && data !== null && typeof data !== 'string' && JSON.stringify(data).length < 1000 ? { responseBody: data } : {}), // Loguj ciało tylko jeśli zdefiniowane i małe
+          // Log response body if defined, not a string, and not too large
+          ...(data !== undefined &&
+          data !== null &&
+          typeof data !== 'string' &&
+          JSON.stringify(data).length < 1000
+            ? { responseBody: data }
+            : {}), // Loguj ciało tylko jeśli zdefiniowane i małe
         };
-        // Dodaj logowanie typu i wartości 'data' dla debugowania
-        // console.log('[LoggingInterceptor] Response data type:', typeof data, 'value:', data);
-        this.logger.log(`Outgoing Response: ${JSON.stringify(responseDetails)}`);
+        this.logger.log(
+          `Outgoing Response: ${JSON.stringify(responseDetails)}`,
+        );
       }),
     );
   }

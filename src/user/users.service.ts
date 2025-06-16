@@ -1,13 +1,13 @@
 import {
   Injectable,
   NotFoundException,
-  ConflictException, // Dodano ConflictException
+  ConflictException,
   ForbiddenException,
 } from '@nestjs/common';
 import { UserWithoutPassword } from './interfaces/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import * as bcrypt from 'bcrypt'; // Import bcrypt
+import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../database/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -41,9 +41,8 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<UserWithoutPassword> {
-    const { login, password } = createUserDto; // Destrukturyzacja dla łatwiejszego dostępu
+    const { login, password } = createUserDto;
 
-    // Sprawdź, czy użytkownik o danym loginie już istnieje
     const existingUser = await this.userRepository.findOne({
       where: { login },
     });
@@ -52,10 +51,7 @@ export class UsersService {
     }
 
     const saltRounds = parseInt(process.env.CRYPT_SALT || '10', 10);
-    const hashedPassword = await bcrypt.hash(
-      password, // Użyj zdestrukturyzowanej zmiennej password
-      saltRounds,
-    );
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
     const newUser = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
@@ -64,18 +60,16 @@ export class UsersService {
     return this.toResponse(savedUser);
   }
 
-  async update(
+  async updatePassword(
     id: string,
     updatePasswordDto: UpdatePasswordDto,
   ): Promise<UserWithoutPassword> {
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     if (!(await bcrypt.compare(updatePasswordDto.oldPassword, user.password))) {
-      // Użyj bcrypt.compare do porównania hasła
       throw new ForbiddenException('Old password is wrong');
     }
 
@@ -86,26 +80,23 @@ export class UsersService {
     );
 
     user.password = hashedNewPassword;
-    // TypeORM automatycznie zaktualizuje `version` i `updatedAt`
     const updatedUser = await this.userRepository.save(user);
     return this.toResponse(updatedUser);
   }
 
   async remove(id: string): Promise<void> {
-    // Walidacja UUID jest teraz obsługiwana przez ParseUUIDPipe w kontrolerze
     const result = await this.userRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException('User not found');
     }
   }
 
-  // Metoda pomocnicza do mapowania encji na DTO odpowiedzi (bez hasła)
   private toResponse(user: UserEntity): UserWithoutPassword {
     const { password: _, ...restOfUser } = user;
     return {
       ...restOfUser,
-      createdAt: user.createdAt.getTime(), // Konwertuj Date na number (timestamp)
-      updatedAt: user.updatedAt.getTime(), // Konwertuj Date na number (timestamp)
+      createdAt: user.createdAt.getTime(),
+      updatedAt: user.updatedAt.getTime(),
     };
   }
 }

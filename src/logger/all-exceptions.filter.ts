@@ -25,10 +25,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const errorDetails =
-      exception instanceof HttpException ? exception.getResponse() : 'Internal server error';
+      exception instanceof HttpException
+        ? exception.getResponse()
+        : 'Internal server error';
 
-    const message = typeof errorDetails === 'string' ? errorDetails : (errorDetails as any).message || JSON.stringify(errorDetails);
-
+    const message =
+      typeof errorDetails === 'string'
+        ? errorDetails
+        : (errorDetails as any).message || JSON.stringify(errorDetails);
 
     const errorResponse = {
       statusCode: httpStatus,
@@ -39,7 +43,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     const logMessage = `Status: ${httpStatus} Message: ${message} Path: ${request.url} Method: ${request.method}`;
-    this.logger.error(logMessage, exception instanceof Error ? exception.stack : undefined);
+    this.logger.error(
+      logMessage,
+      exception instanceof Error ? exception.stack : undefined,
+    );
 
     response.status(httpStatus).json(errorResponse);
   }
