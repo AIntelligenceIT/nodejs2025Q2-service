@@ -35,7 +35,11 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Home Library Service')
-    .setDescription('The Home Library Service API description')
+    .setDescription(`
+      The Home Library Service API description.
+      To access protected endpoints, first log in using the \`/auth/login\` endpoint to obtain an Access Token.
+      Then, click the "Authorize" button (usually in the top right corner) and enter the token in the format: \`Bearer <YOUR_ACCESS_TOKEN>\`.
+    `)
     .setVersion('1.0')
     .addBearerAuth()
     .build();
