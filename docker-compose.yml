@@ -17,7 +17,9 @@ services:
         condition: service_healthy
     networks:
       - app-network
-    restart: unless-stopped
+    restart: always
+    volumes:
+      - ./logs:/usr/src/app/logs
 
   db:
     image: alandocke/nodejs2025q2-db:latest

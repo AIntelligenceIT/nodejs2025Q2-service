@@ -49,7 +49,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             `[JwtAuthGuard] Path: ${request.url}, super.canActivate (Promise) error:`,
             err.message,
           );
-          throw new UnauthorizedException(err.message); // Rzuć ponownie błąd, aby NestJS go obsłużył
+          throw new UnauthorizedException(err.message); // Rethrow error so NestJS can handle it
         });
     }
     console.log(
