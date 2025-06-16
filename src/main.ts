@@ -28,7 +28,7 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalGuards(new JwtAuthGuard(reflector)); // Autoryzacja włączona globalnie
+  app.useGlobalGuards(new JwtAuthGuard(reflector)); // Przywróć przekazywanie reflector
   // Filtry i interceptory powinny być inicjowane z instancją loggera
   app.useGlobalFilters(new AllExceptionsFilter(customLogger));
   app.useGlobalInterceptors(new LoggingInterceptor(customLogger));
