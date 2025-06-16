@@ -10,9 +10,18 @@ import {
   HttpStatus,
   ParseUUIDPipe,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBody,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { TracksService } from './tracks.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
+
+@ApiTags('Tracks') // Dobra praktyka dla organizacji w Swaggerze
+@ApiBearerAuth()   
 
 @Controller('track') // Dodano dekorator Controller z prefiksem ścieżki
 // @UseGuards(JwtAuthGuard) // Usunięto, ponieważ globalny strażnik jest włączony
