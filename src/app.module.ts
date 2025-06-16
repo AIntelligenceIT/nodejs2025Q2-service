@@ -16,6 +16,7 @@ import { UserEntity } from './database/entities/user.entity';
 import { ArtistEntity } from './database/entities/artist.entity';
 import { AlbumEntity } from './database/entities/album.entity';
 import { TrackEntity } from './database/entities/track.entity';
+import { LoggerModule } from './logger/logger.module';
 import { FavoritesEntity } from './database/entities/favorites.entity';
 
 @Module({
@@ -85,6 +86,7 @@ import { FavoritesEntity } from './database/entities/favorites.entity';
     AlbumsModule,
     TracksModule,
     FavoritesModule,
+    LoggerModule, // Dodaj LoggerModule
   ],
   controllers: [AppController],
   providers: [AppService],
