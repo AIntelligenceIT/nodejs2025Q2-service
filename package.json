@@ -20,6 +20,7 @@
     
     "test:noauth": "jest --testMatch \"<rootDir>/*.spec.ts\" --noStackTrace --runInBand",
     "test": "cross-env TEST_MODE=auth jest --testPathIgnorePatterns refresh.e2e.spec.ts --noStackTrace --runInBand",
+    "test:ci": "ts-node scripts/run-tests.ts",
     "test:refresh": "cross-env TEST_MODE=auth jest --testPathPattern refresh.e2e.spec.ts --noStackTrace --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -32,7 +33,7 @@
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^10.4.15",
-    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/swagger": "^8.0.0",
     "@prisma/client": "^6.8.2",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",

@@ -11,16 +11,22 @@ let prismaService;
 
 beforeAll(async () => {
   try {
+    console.log('TEST SETUP: creating app');
     app = await NestFactory.create(AppModule);
+    console.log('TEST SETUP: app created');
     const reflector = app.get(Reflector);
-    
-    app.useGlobalPipes(new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }));
 
-    app.useGlobalGuards(new JwtAuthGuard(reflector));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
+
+    if (process.env.TEST_MODE === 'auth') {
+      app.useGlobalGuards(new JwtAuthGuard(reflector));
+    }
 
     const config = new DocumentBuilder()
       .setTitle('Home Library Service')
@@ -33,13 +39,18 @@ beforeAll(async () => {
     SwaggerModule.setup('doc', app, document);
 
     // Inicjalizacja bazy danych
+    console.log('TEST SETUP: getting prisma service');
     prismaService = app.get(PrismaService);
+    console.log('TEST SETUP: connecting prisma');
     await prismaService.$connect();
+    console.log('TEST SETUP: prisma connected');
 
+    console.log('TEST SETUP: starting app listen on 4000');
     await app.listen(4000);
-    
+    console.log('TEST SETUP: app listening');
+
     // Czekamy na pełne uruchomienie aplikacji
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   } catch (error) {
     console.error('Error during app initialization:', error);
     throw error;
@@ -71,4 +82,4 @@ afterAll(async () => {
     console.error('Error during app cleanup:', error);
     throw error;
   }
-}); 
+});

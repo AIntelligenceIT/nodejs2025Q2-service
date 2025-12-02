@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { User, UserWithoutPassword } from './interfaces/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -10,23 +15,28 @@ export class UsersService {
   private users: User[] = [];
 
   findAll(): UserWithoutPassword[] {
-    return this.users.map(({ password, ...user }) => user);
+    return this.users.map((u) => {
+      const copy = { ...u } as any;
+      delete copy.password;
+      return copy;
+    });
   }
 
   findOne(id: string): UserWithoutPassword {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid UUID');
     }
-    const user = this.users.find(user => user.id === id);
+    const user = this.users.find((user) => user.id === id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    const copy = { ...user } as any;
+    delete copy.password;
+    return copy;
   }
 
   findByLogin(login: string): User {
-    const user = this.users.find(user => user.login === login);
+    const user = this.users.find((user) => user.login === login);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -42,15 +52,19 @@ export class UsersService {
       updatedAt: Date.now(),
     };
     this.users.push(user);
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    const copy = { ...user } as any;
+    delete copy.password;
+    return copy;
   }
 
-  update(id: string, updatePasswordDto: UpdatePasswordDto): UserWithoutPassword {
+  update(
+    id: string,
+    updatePasswordDto: UpdatePasswordDto,
+  ): UserWithoutPassword {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid UUID');
     }
-    const userIndex = this.users.findIndex(user => user.id === id);
+    const userIndex = this.users.findIndex((user) => user.id === id);
     if (userIndex === -1) {
       throw new NotFoundException('User not found');
     }
@@ -68,18 +82,19 @@ export class UsersService {
     };
 
     this.users[userIndex] = updatedUser;
-    const { password, ...userWithoutPassword } = updatedUser;
-    return userWithoutPassword;
+    const copy = { ...updatedUser } as any;
+    delete copy.password;
+    return copy;
   }
 
   remove(id: string): void {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid UUID');
     }
-    const userIndex = this.users.findIndex(user => user.id === id);
+    const userIndex = this.users.findIndex((user) => user.id === id);
     if (userIndex === -1) {
       throw new NotFoundException('User not found');
     }
     this.users.splice(userIndex, 1);
   }
-} 
+}

@@ -1,30 +1,30 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { Track } from './interfaces/track.interface';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { validate as isUUID } from 'uuid';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class TracksService {
-  private tracks: Track[] = [];
+  constructor(private prisma: PrismaService) {}
 
-  findAll(): Track[] {
-    return this.tracks;
+  async findAll(): Promise<Track[]> {
+    return this.prisma.track.findMany();
   }
 
-  findOne(id: string): Track {
+  async findOne(id: string): Promise<Track> {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid UUID');
     }
-    const track = this.tracks.find(track => track.id === id);
+    const track = await this.prisma.track.findUnique({ where: { id } });
     if (!track) {
       throw new NotFoundException('Track not found');
     }
     return track;
   }
 
-  create(createTrackDto: CreateTrackDto): Track {
+  async create(createTrackDto: CreateTrackDto): Promise<Track> {
     if (!createTrackDto.name || typeof createTrackDto.name !== 'string') {
       throw new BadRequestException('Name is required and must be a string');
     }
@@ -38,20 +38,16 @@ export class TracksService {
       throw new BadRequestException('Invalid album UUID');
     }
 
-    const track: Track = {
-      id: randomUUID(),
-      ...createTrackDto,
-    };
-    this.tracks.push(track);
-    return track;
+    return this.prisma.track.create({ data: createTrackDto });
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto): Track {
+  async update(id: string, updateTrackDto: UpdateTrackDto): Promise<Track> {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid UUID');
     }
-    const trackIndex = this.tracks.findIndex(track => track.id === id);
-    if (trackIndex === -1) {
+
+    const track = await this.prisma.track.findUnique({ where: { id } });
+    if (!track) {
       throw new NotFoundException('Track not found');
     }
 
@@ -68,32 +64,21 @@ export class TracksService {
       throw new BadRequestException('Invalid album UUID');
     }
 
-    const updatedTrack: Track = {
-      ...this.tracks[trackIndex],
-      ...updateTrackDto,
-    };
-
-    this.tracks[trackIndex] = updatedTrack;
-    return updatedTrack;
+    return this.prisma.track.update({ where: { id }, data: updateTrackDto });
   }
 
-  remove(id: string): void {
+  async remove(id: string): Promise<void> {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid UUID');
     }
-    const trackIndex = this.tracks.findIndex(track => track.id === id);
-    if (trackIndex === -1) {
+    const track = await this.prisma.track.findUnique({ where: { id } });
+    if (!track) {
       throw new NotFoundException('Track not found');
     }
-    this.tracks.splice(trackIndex, 1);
+    await this.prisma.track.delete({ where: { id } });
   }
 
-  removeArtist(artistId: string): void {
-    this.tracks = this.tracks.map(track => {
-      if (track.artistId === artistId) {
-        return { ...track, artistId: null };
-      }
-      return track;
-    });
+  async removeArtist(artistId: string): Promise<void> {
+    await this.prisma.track.updateMany({ where: { artistId }, data: { artistId: null } });
   }
-} 
+}

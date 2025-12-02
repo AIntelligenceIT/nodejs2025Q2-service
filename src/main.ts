@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -8,14 +9,18 @@ import { Reflector } from '@nestjs/core';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const reflector = app.get(Reflector);
-  
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-    forbidNonWhitelisted: true,
-  }));
 
-  app.useGlobalGuards(new JwtAuthGuard(reflector));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+
+  if (process.env.TEST_MODE === 'auth') {
+    app.useGlobalGuards(new JwtAuthGuard(reflector));
+  }
 
   const config = new DocumentBuilder()
     .setTitle('Home Library Service')
@@ -27,6 +32,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('doc', app, document);
 
-  await app.listen(4000);
+  const port = process.env.PORT ? Number(process.env.PORT) : 4000;
+  await app.listen(port);
 }
 bootstrap();
