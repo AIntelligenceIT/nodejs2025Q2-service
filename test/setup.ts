@@ -11,9 +11,7 @@ let prismaService;
 
 beforeAll(async () => {
   try {
-    console.log('TEST SETUP: creating app');
     app = await NestFactory.create(AppModule);
-    console.log('TEST SETUP: app created');
     const reflector = app.get(Reflector);
 
     app.useGlobalPipes(
@@ -39,15 +37,10 @@ beforeAll(async () => {
     SwaggerModule.setup('doc', app, document);
 
     // Inicjalizacja bazy danych
-    console.log('TEST SETUP: getting prisma service');
     prismaService = app.get(PrismaService);
-    console.log('TEST SETUP: connecting prisma');
     await prismaService.$connect();
-    console.log('TEST SETUP: prisma connected');
 
-    console.log('TEST SETUP: starting app listen on 4000');
     await app.listen(4000);
-    console.log('TEST SETUP: app listening');
 
     // Czekamy na pełne uruchomienie aplikacji
     await new Promise((resolve) => setTimeout(resolve, 1000));

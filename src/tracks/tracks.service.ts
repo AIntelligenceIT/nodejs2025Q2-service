@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Track } from './interfaces/track.interface';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
@@ -51,16 +55,30 @@ export class TracksService {
       throw new NotFoundException('Track not found');
     }
 
-    if (updateTrackDto.name !== undefined && typeof updateTrackDto.name !== 'string') {
+    if (
+      updateTrackDto.name !== undefined &&
+      typeof updateTrackDto.name !== 'string'
+    ) {
       throw new BadRequestException('Name must be a string');
     }
-    if (updateTrackDto.duration !== undefined && typeof updateTrackDto.duration !== 'number') {
+    if (
+      updateTrackDto.duration !== undefined &&
+      typeof updateTrackDto.duration !== 'number'
+    ) {
       throw new BadRequestException('Duration must be a number');
     }
-    if (updateTrackDto.artistId !== undefined && updateTrackDto.artistId !== null && !isUUID(updateTrackDto.artistId)) {
+    if (
+      updateTrackDto.artistId !== undefined &&
+      updateTrackDto.artistId !== null &&
+      !isUUID(updateTrackDto.artistId)
+    ) {
       throw new BadRequestException('Invalid artist UUID');
     }
-    if (updateTrackDto.albumId !== undefined && updateTrackDto.albumId !== null && !isUUID(updateTrackDto.albumId)) {
+    if (
+      updateTrackDto.albumId !== undefined &&
+      updateTrackDto.albumId !== null &&
+      !isUUID(updateTrackDto.albumId)
+    ) {
       throw new BadRequestException('Invalid album UUID');
     }
 
@@ -79,6 +97,9 @@ export class TracksService {
   }
 
   async removeArtist(artistId: string): Promise<void> {
-    await this.prisma.track.updateMany({ where: { artistId }, data: { artistId: null } });
+    await this.prisma.track.updateMany({
+      where: { artistId },
+      data: { artistId: null },
+    });
   }
 }
