@@ -16,7 +16,8 @@ export const AppDataSource = new DataSource({
   password: process.env.POSTGRES_PASSWORD || 'password',
   database: process.env.POSTGRES_DB || 'homelibrary',
   entities: [UserEntity, ArtistEntity, AlbumEntity, TrackEntity, FavoritesEntity],
-  migrations: ['src/migrations/*{.ts,.js}'],
+  // Include both source and dist migrations so migrations run in dev and in built image
+  migrations: ['dist/migrations/*{.js,.cjs}', 'src/migrations/*{.ts,.js}'],
 });
 
 export default AppDataSource;

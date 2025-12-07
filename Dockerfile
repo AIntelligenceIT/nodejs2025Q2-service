@@ -33,5 +33,9 @@ RUN npm ci --omit=dev
 
 # Kopiuj zbudowaną aplikację z etapu 'builder'
 COPY --from=builder /usr/src/app/dist ./dist
+# Kopiuj entrypoint (skrypt wykonujący migracje) i nadaj prawa wykonania
+COPY docker-entrypoint.sh ./
+RUN chmod +x ./docker-entrypoint.sh
 EXPOSE 4000
+ENTRYPOINT ["/usr/src/app/docker-entrypoint.sh"]
 CMD ["node", "dist/main"]
