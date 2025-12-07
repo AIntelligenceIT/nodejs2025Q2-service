@@ -10,6 +10,8 @@ services:
       - "${APP_PORT:-4000}:${APP_PORT:-4000}"
     env_file:
       - .env
+    environment:
+      - TEST_MODE=${TEST_MODE:-auth}
     depends_on:
       db:
         condition: service_healthy

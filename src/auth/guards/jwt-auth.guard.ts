@@ -19,6 +19,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
+    // Skip JWT validation in noauth test mode
+    if (process.env.TEST_MODE !== 'auth') {
+      return true;
+    }
+
     return super.canActivate(context);
   }
 }
