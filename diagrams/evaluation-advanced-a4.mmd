@@ -1,0 +1,27 @@
+%% Evaluation Part 3: Advanced Containerization & Database (A4-friendly)
+flowchart TB
+  subgraph AC ["⚡ Advanced: Containerization"]
+    IMG_SIZE["Image size < 500MB\n❌ +20 (NOT measured)"]
+    NPM_SCAN["npm script for vulnerability scan\n✅ +10 (present)"]
+    PUSH_DOCKER["Image pushed to DockerHub\n❌ +20 (NOT verified)"]
+  end
+
+  subgraph AB ["⚡ Advanced: Database & ORM"]
+    MIGR["Database migrations used\n❌ +30 (MISSING)"]
+    ENV_VARS["Connection vars in .env\n✅ +10 (present)"]
+    RELS["TypeORM relations (decorators)\n✅ +10 (present)"]
+    CONTAINER_DB["DB runs in container (not local)\n✅ +30 (present)"]
+  end
+
+  AC --> SUBTOTAL_AC["Advanced Container: +30 / 50"]
+  AB --> SUBTOTAL_AB["Advanced DB: +80 / 80"]
+  SUBTOTAL_AC --> TOTAL_ADV["⭐ Advanced Total: +110 / 130 points"]
+  SUBTOTAL_AB --> TOTAL_ADV
+
+  classDef present fill:#e6ffe6,stroke:#2d9a2d,stroke-width:2px,color:#000;
+  classDef missing fill:#ffe6e6,stroke:#b52d2d,stroke-width:2px,color:#000;
+  classDef summary fill:#fff9e6,stroke:#d4af37,stroke-width:2px,color:#000;
+
+  class NPM_SCAN,ENV_VARS,RELS,CONTAINER_DB present
+  class IMG_SIZE,PUSH_DOCKER,MIGR missing
+  class SUBTOTAL_AC,SUBTOTAL_AB,TOTAL_ADV summary

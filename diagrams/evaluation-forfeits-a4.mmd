@@ -1,0 +1,21 @@
+%% Evaluation Part 4: Forfeits & Penalties (A4-friendly)
+flowchart TB
+  subgraph FO ["⚠️ Forfeits & Penalties"]
+    NO_PR["❌ No Pull Request created\n-40 points"]
+    FAIL_TESTS["❌ Failing tests (≥1)\n-10 points per test"]
+    WRONG_IMG["⚠️ Wrong base image\n-20 points (if applicable)"]
+    NO_DEP["⚠️ Missing dependency config\n-20 points (if applicable)"]
+    HARDCODE["⚠️ Hardcoded variables\n-20 points (if applicable)"]
+    LATE["⚠️ Late commits (>30% total)\n-30% of total (if applicable)"]
+    NO_DEV["⚠️ No separate dev branch\n-40 points (if applicable)"]
+    FEW_COMMITS["⚠️ < 3 commits on dev\n-20 points (if applicable)"]
+  end
+
+  FO --> APPLIED["Applied Forfeits:\n-40 (No PR) -10 (1 failing test)\n= -50 total"]
+
+  classDef forfeit fill:#ffe6e6,stroke:#b52d2d,stroke-width:2px,color:#000;
+  classDef applied fill:#ff9999,stroke:#990000,stroke-width:2px,color:#fff;
+
+  class NO_PR,FAIL_TESTS forfeit
+  class WRONG_IMG,NO_DEP,HARDCODE,LATE,NO_DEV,FEW_COMMITS forfeit
+  class APPLIED applied

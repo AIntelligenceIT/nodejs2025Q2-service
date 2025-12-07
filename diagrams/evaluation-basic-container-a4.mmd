@@ -1,0 +1,19 @@
+%% Evaluation Part 1: Basic Containerization (A4-friendly)
+flowchart TB
+  subgraph BC ["🐳 Basic Containerization"]
+    README["README with run instructions\n✅ +20 (present)"]
+    NETWORK["User-defined bridge network\n✅ +30 (present)"]
+    RESTART["Restart policy: unless-stopped\n✅ +30 (present)"]
+    HOTRELOAD["Hot-reload: src folder mount\n❌ +20 (MISSING)"]
+    VOLUMES["Database files in volumes\n✅ +30 (present)"]
+  end
+
+  BC --> SUBTOTAL_BC["⭐ Subtotal: +110 / 150 points"]
+
+  classDef present fill:#e6ffe6,stroke:#2d9a2d,stroke-width:2px,color:#000;
+  classDef missing fill:#ffe6e6,stroke:#b52d2d,stroke-width:2px,color:#000;
+  classDef summary fill:#fff9e6,stroke:#d4af37,stroke-width:2px,color:#000;
+
+  class README,NETWORK,RESTART,VOLUMES present
+  class HOTRELOAD missing
+  class SUBTOTAL_BC summary

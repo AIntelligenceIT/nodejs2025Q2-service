@@ -1,0 +1,30 @@
+%% Evaluation Part 5: Final Score Summary (A4-friendly)
+flowchart TB
+  subgraph CALC ["📊 Score Calculation"]
+    BASIC_C["Basic Containerization\n+110 points"]
+    BASIC_D["Basic Database & ORM\n+100 points"]
+    ADVANCED["Advanced (Container + DB)\n+110 points"]
+    SUBTOTAL["Subtotal (before forfeits)\n+320 points POSSIBLE"]
+  end
+
+  BASIC_C --> SUBTOTAL
+  BASIC_D --> SUBTOTAL
+  ADVANCED --> SUBTOTAL
+
+  SUBTOTAL --> ACTUAL["Achieved so far:\n+220 points"]
+
+  ACTUAL --> BREAKDOWN["Breakdown:\nBasic Container: 110/150\nBasic DB: 100/100\nAdvanced: 110/130\n= 320 achievable"]
+
+  BREAKDOWN --> FORFEITS_APPLIED["Forfeits Applied:\n-40 (No PR)\n-10 (1 failing test)\n= -50 total"]
+
+  FORFEITS_APPLIED --> FINAL["🏆 FINAL SCORE\n220 / 320 points\n(68.75%)"]
+
+  classDef section fill:#e6f3ff,stroke:#0055aa,stroke-width:2px,color:#000;
+  classDef score fill:#fff9e6,stroke:#d4af37,stroke-width:2px,color:#000;
+  classDef penalty fill:#ffe6e6,stroke:#b52d2d,stroke-width:2px,color:#000;
+  classDef final fill:#e6ffe6,stroke:#2d9a2d,stroke-width:3px,color:#000;
+
+  class BASIC_C,BASIC_D,ADVANCED,SUBTOTAL section
+  class ACTUAL,BREAKDOWN score
+  class FORFEITS_APPLIED penalty
+  class FINAL final

@@ -1,0 +1,17 @@
+%% Evaluation Part 2: Basic Database & ORM (A4-friendly)
+flowchart TB
+  subgraph BD ["🗄️ Basic Database & ORM"]
+    USERS["User entity in PostgreSQL\n✅ +20 (present)"]
+    ARTISTS["Artist entity in PostgreSQL\n✅ +20 (present)"]
+    ALBUMS["Album entity in PostgreSQL\n✅ +20 (present)"]
+    TRACKS["Track entity in PostgreSQL\n✅ +20 (present)"]
+    FAVS["Favorites entity in PostgreSQL\n✅ +20 (present)"]
+  end
+
+  BD --> SUBTOTAL_BD["⭐ Subtotal: +100 / 100 points"]
+
+  classDef present fill:#e6ffe6,stroke:#2d9a2d,stroke-width:2px,color:#000;
+  classDef summary fill:#fff9e6,stroke:#d4af37,stroke-width:2px,color:#000;
+
+  class USERS,ARTISTS,ALBUMS,TRACKS,FAVS present
+  class SUBTOTAL_BD summary
