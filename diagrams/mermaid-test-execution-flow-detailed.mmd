@@ -1,0 +1,27 @@
+%% Szczegółowy przebieg uruchamiania testów i trybów (A4-friendly)
+sequenceDiagram
+  autonumber
+  participant Dev as "Developer (lokalnie)"
+  participant CLI as "Terminal / npm scripts"
+  participant Compose as "Docker Compose (app + db)"
+  participant App as "NestJS app (container)"
+  participant Tests as "Jest (test runner)"
+
+  Dev->>CLI: wybiera tryb (auth / noauth)
+  CLI->>Compose: start z env TEST_MODE=auth|noauth
+  Compose->>App: uruchomienie kontenera z ENV TEST_MODE
+  App-->>Compose: aplikacja czyta process.env.TEST_MODE
+
+  Tests->>App: wysyła zapytania HTTP (supertest -> localhost:4000)
+  Note right of Tests: jeśli TEST_MODE=auth, przed testami
+  Note right of Tests: testy pobierają token i dodają header
+  App-->>Tests: zwraca statusy (200/201/400/404/401)
+
+  alt TEST_MODE=auth
+    Tests->>App: autoryzowane żądania z tokenem -> oczekiwane odpowiedzi
+  else TEST_MODE=noauth
+    Tests->>App: brak tokena -> jwt bypass -> oczekiwane odpowiedzi
+  end
+
+  Tests-->>Dev: wynik testów (pass/fail)
+

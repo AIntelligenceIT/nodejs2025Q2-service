@@ -1,0 +1,22 @@
+%% Szczegółowy flow JwtAuthGuard (A4-friendly)
+flowchart TB
+  A["Wejście: request -> JwtAuthGuard.canActivate()"]
+  B["Sprawdź 'Public' decorator (IS_PUBLIC_KEY)"]
+  C["Jeżeli Public: zwróć true (dostęp otwarty)"]
+  D["Sprawdź process.env.TEST_MODE"]
+  E["Jeżeli TEST_MODE !== 'auth' -> zwróć true (bypass JWT)"]
+  F["W przeciwnym wypadku -> return super.canActivate(context) -> walidacja JWT"]
+  G["JWT valid -> dostęp przyznany\nJWT invalid -> 401 Unauthorized"]
+
+  A --> B
+  B -- "isPublic = true" --> C
+  B -- "isPublic = false" --> D
+  D --> E
+  E -- "noauth mode" --> C
+  E -- "auth mode" --> F
+  F --> G
+
+  classDef decision fill:#fff9e6,stroke:#d4af37,color:#000;
+  classDef action fill:#e6ffe6,stroke:#2d9a2d,color:#000;
+  class A,B,D,E decision
+  class C,F,G action

@@ -1,0 +1,23 @@
+%% Diagram środowisk: .env, docker-compose i propagacja TEST_MODE (A4-friendly)
+flowchart TB
+  subgraph DOTENV[".env (repo)"]
+    DOTENV_FILE["TEST_MODE=auth (domyślnie)\nAPP_PORT, POSTGRES_...\n"]
+  end
+
+  subgraph COMPOSE["docker-compose.yml"]
+    COMPOSE_FILE["env_file: .env\nenvironment:\n  - TEST_MODE=${TEST_MODE:-auth}\n"]
+  end
+
+  subgraph CLI["Uruchamianie (shell)"]
+    CLI_CMD["TEST_MODE=noauth docker-compose up -d\n (override zmienne) "]
+  end
+
+  DOTENV_FILE --> COMPOSE_FILE
+  CLI_CMD --> COMPOSE_FILE
+  COMPOSE_FILE --> CONTAINER["Kontener: APP (process.env.TEST_MODE)"]
+  CONTAINER --> APP_LOGS["Aplikacja widzi TEST_MODE i dostosowuje zachowanie"]
+
+  classDef note fill:#fff9e6,stroke:#d4af37,color:#000;
+  classDef action fill:#e6ffe6,stroke:#2d9a2d,color:#000;
+  class DOTENV_FILE,CLI_CMD note
+  class COMPOSE_FILE,CONTAINER,APP_LOGS action

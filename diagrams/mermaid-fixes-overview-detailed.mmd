@@ -1,0 +1,20 @@
+%% Przegląd zmian i napraw (szczegółowy, A4-friendly)
+flowchart TB
+  subgraph OVERVIEW["Przegląd napraw i zmian"]
+    INIT["db/init.sql: usunięto 'transaction_timeout'\n✅ DB init OK"]
+    GUARD["src/auth/guards/jwt-auth.guard.ts: dodano TEST_MODE check\n✅ NoAuth test bypass"]
+    PKG["package.json: test:noauth -> TEST_MODE=noauth\n✅ test scripts poprawione"]
+    COMPOSE["docker-compose.yml: dodano environment TEST_MODE i env_file .env\n✅ Możliwość override"]
+    DOTENV[".env: dodano TEST_MODE=auth (domyślnie)\n✅ Domyślne ustawienie)"]
+  end
+
+  OVERVIEW --> INIT
+  OVERVIEW --> GUARD
+  OVERVIEW --> PKG
+  OVERVIEW --> COMPOSE
+  OVERVIEW --> DOTENV
+
+  classDef present fill:#e6ffe6,stroke:#2d9a2d,color:#000;
+  classDef note fill:#fff9e6,stroke:#d4af37,color:#000;
+  class INIT,GUARD,PKG,COMPOSE,DOTENV present
+  class OVERVIEW note

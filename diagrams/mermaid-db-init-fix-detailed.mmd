@@ -1,0 +1,21 @@
+%% Szczegółowy diagram: inicjalizacja DB i naprawa init.sql (A4-friendly)
+flowchart TB
+  subgraph DB_INIT["Inicjalizacja bazy danych (init.sql)"]
+    START["Start kontenera Postgres initdb"]
+    RUN_INIT["Uruchom skrypty w /docker-entrypoint-initdb.d/init.sql"]
+    PARAM_ERR["Błąd: 'transaction_timeout' nieznany w Postgres 16 -> ERROR"]
+    FIX["Usunięcie linii 'SET transaction_timeout = 0' z db/init.sql"]
+    REINIT["Recreate volume OR remove old DB directory -> initdb wykonane poprawnie"]
+    READY["DB gotowa i akceptuje połączenia"]
+  end
+
+  START --> RUN_INIT
+  RUN_INIT --> PARAM_ERR
+  PARAM_ERR --> FIX
+  FIX --> REINIT
+  REINIT --> READY
+
+  classDef problem fill:#ffe6e6,stroke:#b52d2d,color:#000;
+  classDef fix fill:#e6ffe6,stroke:#2d9a2d,color:#000;
+  class PARAM_ERR problem
+  class FIX,REINIT,READY fix
