@@ -5,7 +5,9 @@ export class InitEntities1691400000000 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // We reuse the SQL from db/init.sql to initialize schema and seed data.
-    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;`);
+    await queryRunner.query(
+      `CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;`,
+    );
 
     await queryRunner.query(`
 CREATE TABLE IF NOT EXISTS public.artists (
@@ -99,7 +101,9 @@ CREATE TABLE IF NOT EXISTS public.favorites_tracks (
     );
 
     // Insert minimal seed: ensure global favorites row exists
-    await queryRunner.query(`INSERT INTO public.favorites (id) VALUES ('global-favorites') ON CONFLICT DO NOTHING;`);
+    await queryRunner.query(
+      `INSERT INTO public.favorites (id) VALUES ('global-favorites') ON CONFLICT DO NOTHING;`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

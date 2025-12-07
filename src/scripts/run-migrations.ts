@@ -9,7 +9,10 @@ async function run() {
     }
     console.log('[migrations] Running pending migrations...');
     const res = await ds.runMigrations();
-    console.log('[migrations] Migrations executed:', res.map(r => r.name));
+    console.log(
+      '[migrations] Migrations executed:',
+      res.map((r) => r.name),
+    );
     await ds.destroy();
     console.log('[migrations] Done.');
   } catch (err) {

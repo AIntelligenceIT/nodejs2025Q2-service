@@ -15,7 +15,13 @@ export const AppDataSource = new DataSource({
   username: process.env.POSTGRES_USER || 'user',
   password: process.env.POSTGRES_PASSWORD || 'password',
   database: process.env.POSTGRES_DB || 'homelibrary',
-  entities: [UserEntity, ArtistEntity, AlbumEntity, TrackEntity, FavoritesEntity],
+  entities: [
+    UserEntity,
+    ArtistEntity,
+    AlbumEntity,
+    TrackEntity,
+    FavoritesEntity,
+  ],
   // Include both source and dist migrations so migrations run in dev and in built image
   migrations:
     process.env.NODE_ENV === 'production'
