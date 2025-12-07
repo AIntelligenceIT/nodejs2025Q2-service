@@ -1,0 +1,24 @@
+flowchart TB
+  base["develop_part2b (current)"] --> branch["develop_part2b-q4 (new)"]
+
+  branch --> n24["Update Node to 24.x (Dockerfile)"]
+  branch --> compose["Modify docker-compose to build DB from Dockerfile.postgres"]
+  branch --> envfix["Fix .env (trim values, add DATABASE_URL if needed)"]
+  branch --> scan["Build images, run security scan, push to Docker Hub"]
+  branch --> tests["Run tests (jest) and CI checks"]
+
+  subgraph notes [Planned changes]
+    n24
+    compose
+    envfix
+    scan
+    tests
+  end
+
+  %% make text color visible (black) and keep soft background
+  classDef planned fill:#eef,stroke:#336,stroke-width:1px,color:#000;
+  class n24,compose,envfix,scan,tests planned;
+
+  %% ensure base and branch nodes have visible text too
+  style base fill:#ffffff,stroke:#333,stroke-width:1px,color:#000
+  style branch fill:#ffffff,stroke:#333,stroke-width:1px,color:#000
