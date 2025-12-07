@@ -1,0 +1,31 @@
+  %% Compact ER for A4 print
+  USER ||--o{ ARTIST : creates
+  ARTIST ||--o{ ALBUM : has
+  ARTIST ||--o{ TRACK : performs
+  ALBUM ||--o{ TRACK : contains
+  FAVORITES ||--o{ ARTIST : contains
+  FAVORITES ||--o{ ALBUM : contains
+  FAVORITES ||--o{ TRACK : contains
+
+  USER {
+    erDiagram
+      USER ||--o{ ARTIST : creates
+      ARTIST ||--o{ ALBUM : has
+      ARTIST ||--o{ TRACK : performs
+      ALBUM ||--o{ TRACK : contains
+      FAVORITES ||--o{ ARTIST : contains
+      FAVORITES ||--o{ ALBUM : contains
+      FAVORITES ||--o{ TRACK : contains
+
+      USER {
+        id PK
+        login UK
+        password
+      }
+      ARTIST {
+        id PK
+        name
+      }
+      ALBUM { id PK name year artistId }
+      TRACK { id PK name duration artistId albumId }
+      FAVORITES { id PK }

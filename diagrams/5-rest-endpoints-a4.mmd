@@ -1,0 +1,47 @@
+graph TB
+  %% Compact endpoints map for A4
+  
+  
+  
+graph TB
+  %% Compact endpoints map for A4
+  subgraph Auth
+    A1[POST /auth/signup]
+    A2[POST /auth/login]
+    A3[POST /auth/refresh]
+  end
+  subgraph Artists
+    AR1[POST /artist]
+    AR2[GET /artist]
+    AR3[GET /artist/:id]
+  end
+  subgraph Albums
+    AL1[POST /album]
+    AL2[GET /album]
+    AL3[GET /album/:id]
+  end
+  subgraph Tracks
+    T1[GET /track]
+    T2[GET /track/:id]
+    T3[POST /track]
+  end
+  subgraph Users
+    U1[GET /user]
+    U2[GET /user/:id]
+  end
+  subgraph Favorites
+    F1[GET /favorites]
+    F2[POST /favorites/:type/:id]
+    F3[DELETE /favorites/:type/:id]
+  end
+
+  Auth --> Artists
+  Artists --> Albums
+  Albums --> Tracks
+  Users --> Favorites
+
+  %% Status legend (short)
+  subgraph Legend
+    L1[200/201/204 OK]
+    L2[400/401/404/422 Errors]
+  end

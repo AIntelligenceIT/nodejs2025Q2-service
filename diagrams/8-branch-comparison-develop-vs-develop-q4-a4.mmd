@@ -1,0 +1,26 @@
+graph TB
+  %% High-level A4 branch comparison (compact)
+  D4[develop4]
+  Q4[develop-q4]
+  CommitsD4[10 commits]
+  CommitsQ4[2 commits]
+  Files[49 files changed]
+  DBChange[In-memory → SQLite+Prisma]
+  UsersRename[user/ → users/]
+  MajorFav[Favorites rewrite (+333 lines)]
+  Tests[Test infra improved]
+
+  D4 --> CommitsD4
+  Q4 --> CommitsQ4
+  D4 --> Files
+  Q4 --> Files
+  Q4 --> DBChange
+  Q4 --> UsersRename
+  Q4 --> MajorFav
+  Q4 --> Tests
+
+  style DBChange fill:#E74C3C
+  style MajorFav fill:#F08080
+  style Tests fill:#87CEEB
+
+  %% NOTE: Lines delta: +1325 / -1004

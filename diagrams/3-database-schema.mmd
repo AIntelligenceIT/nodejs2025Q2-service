@@ -1,0 +1,47 @@
+erDiagram
+    USER ||--o{ ARTIST : "creates"
+    USER ||--o{ ALBUM : "creates"
+    USER ||--o{ TRACK : "creates"
+    ARTIST ||--o{ ALBUM : "has"
+    ARTIST ||--o{ TRACK : "performs"
+    ALBUM ||--o{ TRACK : "contains"
+    FAVORITES ||--o{ ARTIST : "contains"
+    FAVORITES ||--o{ ALBUM : "contains"
+    FAVORITES ||--o{ TRACK : "contains"
+
+    USER {
+        string id PK "UUID primary key"
+        string login UK "Unique login"
+        string password "Hashed password"
+        int version "User version"
+        timestamp createdAt "Creation timestamp"
+        timestamp updatedAt "Last update timestamp"
+    }
+
+    ARTIST {
+        string id PK "UUID primary key"
+        string name "Artist name"
+        boolean grammy "Grammy award flag"
+    }
+
+    ALBUM {
+        string id PK "UUID primary key"
+        string name "Album name"
+        int year "Release year"
+        string artistId FK "Reference to Artist (nullable)"
+    }
+
+    TRACK {
+        string id PK "UUID primary key"
+        string name "Track name"
+        int duration "Duration in seconds"
+        string artistId FK "Reference to Artist (nullable)"
+        string albumId FK "Reference to Album (nullable)"
+    }
+
+    FAVORITES {
+        string id PK "UUID primary key"
+        "relation to artists" "M:N"
+        "relation to albums" "M:N"
+        "relation to tracks" "M:N"
+    }

@@ -1,0 +1,98 @@
+sequenceDiagram
+    participant Client as Client/Browser
+    participant FavCtrl as FavoritesController
+    participant FavService as FavoritesService
+    participant Prisma as Prisma Client
+    participant DB as SQLite Database
+
+    autonumber
+
+    rect rgb(255, 200, 200)
+    Note over Client,DB: GET ALL FAVORITES
+    Client->>FavCtrl: GET /favorites
+    FavCtrl->>FavService: findAll()
+    FavService->>Prisma: favorites.findFirst({ include: {...} })
+    Prisma->>DB: SELECT * FROM Favorites<br/>JOIN artists, albums, tracks
+    DB-->>Prisma: Favorites record OR null
+    
+    alt Favorites exist
+        Prisma-->>FavService: {id, artists[], albums[], tracks[]}
+        FavService-->>FavCtrl: Favorites object
+    else No favorites yet
+        FavService-->>FavCtrl: {artists: [], albums: [], tracks: []}
+    end
+    
+    FavCtrl-->>Client: 200 OK<br/>Favorites
+    end
+
+    rect rgb(200, 255, 200)
+    Note over Client,DB: ADD ARTIST TO FAVORITES
+    Client->>FavCtrl: POST /favorites/artist/:id
+    FavCtrl->>FavService: addArtist(artistId)
+    
+    alt Invalid UUID format
+        FavService-->>FavCtrl: BadRequestException
+        FavCtrl-->>Client: 400 Bad Request
+    end
+    
+    FavService->>Prisma: artist.findUnique({ where: {id} })
+    Prisma->>DB: SELECT * FROM Artist WHERE id = ?
+    DB-->>Prisma: Artist OR null
+    
+    alt Artist not found
+        Prisma-->>FavService: null
+        FavService-->>FavCtrl: UnprocessableEntityException
+        FavCtrl-->>Client: 422 Unprocessable Entity<br/>Artist not found
+    end
+    
+    FavService->>Prisma: favorites.findFirst()
+    DB-->>Prisma: Favorites record OR null
+    
+    alt First favorites creation
+        Prisma->>DB: INSERT INTO Favorites
+        DB->>DB: INSERT INTO _ArtistToFavorites
+        DB-->>Prisma: New Favorites record
+    else Update existing
+        Prisma->>DB: UPDATE Favorites<br/>ADD artist connection
+        DB->>DB: INSERT INTO _ArtistToFavorites
+        DB-->>Prisma: Updated Favorites record
+    end
+    
+    Prisma-->>FavService: {id, artists[], albums[], tracks[]}
+    FavService-->>FavCtrl: Updated Favorites
+    FavCtrl-->>Client: 201 Created<br/>Favorites
+    end
+
+    rect rgb(200, 200, 255)
+    Note over Client,DB: REMOVE ARTIST FROM FAVORITES
+    Client->>FavCtrl: DELETE /favorites/artist/:id
+    FavCtrl->>FavService: removeArtist(artistId)
+    
+    alt Invalid UUID format
+        FavService-->>FavCtrl: BadRequestException
+        FavCtrl-->>Client: 400 Bad Request
+    end
+    
+    FavService->>Prisma: favorites.findFirst({<br/>where: {artists: {some: {id}}}})
+    Prisma->>DB: SELECT * FROM Favorites<br/>WHERE artist exists
+    DB-->>Prisma: Favorites OR null
+    
+    alt Favorites or artist not found
+        Prisma-->>FavService: null
+        FavService-->>FavCtrl: NotFoundException
+        FavCtrl-->>Client: 404 Not Found
+    end
+    
+    Prisma->>DB: UPDATE Favorites<br/>REMOVE artist connection
+    DB->>DB: DELETE FROM _ArtistToFavorites
+    DB-->>Prisma: Updated Favorites
+    
+    Prisma-->>FavService: {id, artists[], albums[], tracks[]}
+    FavService-->>FavCtrl: Updated Favorites
+    FavCtrl-->>Client: 200 OK<br/>Favorites
+    end
+
+    style FavCtrl fill:#F39C12
+    style FavService fill:#50C878
+    style Prisma fill:#E74C3C
+    style DB fill:#95A5A6

@@ -1,0 +1,105 @@
+graph TB
+    subgraph "Request Lifecycle"
+        REQ["HTTP Request arrives<br/>at NestJS application"]
+        
+        subgraph "1. Global Middleware"
+            VP["ValidationPipe<br/>- whitelist: true<br/>- transform: true<br/>- forbidNonWhitelisted: true<br/>→ Validates DTOs"]
+        end
+
+        subgraph "2. Route Matching"
+            ROUTE["NestJS Router matches<br/>request to controller"]
+        end
+
+        subgraph "3. Guard Execution"
+            CHECK_PUBLIC["Check @Public()<br/>decorator on route"]
+            
+            alt_public["@Public() exists?"]
+            NO_GUARD["Skip JwtAuthGuard"]
+            YES_GUARD["JwtAuthGuard executes<br/>(if TEST_MODE=auth)"]
+            
+            TOKEN_VALIDATION["Extract & Validate<br/>Authorization Bearer token"]
+            VERIFY_JWT["JwtService.verify()<br/>token"]
+            
+            TOKEN_VALID["Token valid?"]
+            PASS_AUTH["Pass<br/>Request continues"]
+            FAIL_AUTH["Fail<br/>401 Unauthorized"]
+        end
+
+        subgraph "4. Controller Method"
+            CONTROLLER["Controller method executes<br/>(e.g., create, findAll, update)"]
+            EXTRACT_DTO["Extract & bind DTO<br/>from request body/params"]
+        end
+
+        subgraph "5. Service Layer"
+            SERVICE["Service method processes<br/>business logic"]
+            VALIDATE_DATA["Validate data<br/>(UUID, entity existence, etc.)"]
+            
+            alt_validation["Valid?"]
+            ERROR_HANDLER["Throw Exception<br/>BadRequestException<br/>NotFoundException<br/>UnprocessableEntityException<br/>UnauthorizedException<br/>ForbiddenException"]
+            PRISMA_QUERY["Execute Prisma query<br/>to database"]
+        end
+
+        subgraph "6. Database"
+            DB["SQLite Database<br/>prisma/dev.db"]
+            EXEC_SQL["Execute SQL<br/>SELECT/INSERT/UPDATE/DELETE"]
+        end
+
+        subgraph "7. Response Construction"
+            RESP_SUCCESS["Success Response<br/>- 200 OK<br/>- 201 Created<br/>- 204 No Content"]
+            RESP_ERROR["Error Response<br/>- 400 Bad Request<br/>- 401 Unauthorized<br/>- 403 Forbidden<br/>- 404 Not Found<br/>- 422 Unprocessable Entity"]
+        end
+
+        subgraph "8. HTTP Response"
+            CLIENT["Response sent to Client<br/>(JSON + status code)"]
+        end
+    end
+
+    REQ --> VP
+    VP --> ROUTE
+    ROUTE --> CHECK_PUBLIC
+    CHECK_PUBLIC --> alt_public
+    alt_public -->|Yes| NO_GUARD
+    alt_public -->|No| YES_GUARD
+    
+    NO_GUARD --> CONTROLLER
+    YES_GUARD --> TOKEN_VALIDATION
+    TOKEN_VALIDATION --> VERIFY_JWT
+    VERIFY_JWT --> TOKEN_VALID
+    TOKEN_VALID -->|Yes| PASS_AUTH
+    TOKEN_VALID -->|No| FAIL_AUTH
+    PASS_AUTH --> CONTROLLER
+    FAIL_AUTH --> RESP_ERROR
+    
+    CONTROLLER --> EXTRACT_DTO
+    EXTRACT_DTO --> SERVICE
+    SERVICE --> VALIDATE_DATA
+    VALIDATE_DATA --> alt_validation
+    alt_validation -->|Yes| PRISMA_QUERY
+    alt_validation -->|No| ERROR_HANDLER
+    
+    ERROR_HANDLER --> RESP_ERROR
+    PRISMA_QUERY --> DB
+    DB --> EXEC_SQL
+    EXEC_SQL --> DB
+    DB --> RESP_SUCCESS
+    
+    RESP_SUCCESS --> CLIENT
+    RESP_ERROR --> CLIENT
+
+    style REQ fill:#4A90E2
+    style VP fill:#9B59B6
+    style ROUTE fill:#3498DB
+    style CHECK_PUBLIC fill:#F1C40F
+    style NO_GUARD fill:#50C878
+    style YES_GUARD fill:#F39C12
+    style TOKEN_VALIDATION fill:#F39C12
+    style VERIFY_JWT fill:#F39C12
+    style CONTROLLER fill:#3498DB
+    style SERVICE fill:#50C878
+    style VALIDATE_DATA fill:#50C878
+    style ERROR_HANDLER fill:#E74C3C
+    style DB fill:#95A5A6
+    style EXEC_SQL fill:#95A5A6
+    style RESP_SUCCESS fill:#50C878
+    style RESP_ERROR fill:#E74C3C
+    style CLIENT fill:#4A90E2

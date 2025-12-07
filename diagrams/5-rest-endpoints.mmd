@@ -1,0 +1,161 @@
+graph TB
+    subgraph "REST API ENDPOINTS"
+        
+        subgraph "Auth (Public - No JWT Required)"
+            A1["POST /auth/signup<br/>{login, password}<br/>→ UserWithoutPassword"]
+            A2["POST /auth/login<br/>{login, password}<br/>→ {accessToken, refreshToken}"]
+            A3["POST /auth/refresh<br/>{refreshToken}<br/>→ {accessToken}"]
+        end
+
+        subgraph "Artists (Public)"
+            AR1["POST /artist<br/>{name, grammy}<br/>→ Artist 201"]
+            AR2["GET /artist<br/>→ Artist[]"]
+            AR3["GET /artist/:id<br/>→ Artist"]
+            AR4["PUT /artist/:id<br/>{name, grammy}<br/>→ Artist"]
+            AR5["DELETE /artist/:id<br/>→ 204 No Content"]
+        end
+
+        subgraph "Albums (Public)"
+            AL1["POST /album<br/>{name, year, artistId?}<br/>→ Album 201"]
+            AL2["GET /album<br/>→ Album[]"]
+            AL3["GET /album/:id<br/>→ Album"]
+            AL4["PUT /album/:id<br/>{name, year, artistId?}<br/>→ Album"]
+            AL5["DELETE /album/:id<br/>→ 204 No Content"]
+        end
+
+        subgraph "Tracks (Protected by JWT)"
+            T1["GET /track<br/>→ Track[]"]
+            T2["GET /track/:id<br/>→ Track"]
+            T3["POST /track<br/>{name, duration, artistId?, albumId?}<br/>→ Track 201"]
+            T4["PUT /track/:id<br/>{name, duration, artistId?, albumId?}<br/>→ Track"]
+            T5["DELETE /track/:id<br/>→ 204 No Content"]
+        end
+
+        subgraph "Users (Mostly Protected)"
+            U1["GET /user<br/>→ UserWithoutPassword[]"]
+            U2["GET /user/:id<br/>→ UserWithoutPassword"]
+            U3["PUT /user/:id/password<br/>{oldPassword, newPassword}<br/>→ UserWithoutPassword"]
+            U4["DELETE /user/:id<br/>→ 204 No Content"]
+        end
+
+        subgraph "Favorites (Mostly Protected)"
+            F1["GET /favorites<br/>→ {artists[], albums[], tracks[]}"]
+            F2["POST /favorites/artist/:id<br/>→ Favorites 201"]
+            F3["DELETE /favorites/artist/:id<br/>→ 200 OK"]
+            F4["POST /favorites/album/:id<br/>→ Favorites 201"]
+            F5["DELETE /favorites/album/:id<br/>→ 200 OK"]
+            F6["POST /favorites/track/:id<br/>→ Favorites 201"]
+            F7["DELETE /favorites/track/:id<br/>→ 200 OK"]
+        end
+
+        subgraph "Documentation"
+            DOC["GET /doc<br/>→ Swagger/OpenAPI Documentation"]
+        end
+    end
+
+    subgraph "Status Codes"
+        S200["200 OK<br/>Successful GET/PUT"]
+        S201["201 Created<br/>Successful POST"]
+        S204["204 No Content<br/>Successful DELETE"]
+        S400["400 Bad Request<br/>Invalid UUID/input"]
+        S401["401 Unauthorized<br/>Invalid/missing JWT"]
+        S403["403 Forbidden<br/>Insufficient permissions"]
+        S404["404 Not Found<br/>Resource not found"]
+        S422["422 Unprocessable Entity<br/>Entity doesn't exist<br/>(e.g., artist not found)"]
+    end
+
+    A1 --> S201
+    A2 --> S200
+    A3 --> S200
+    A3 --> S401
+
+    AR1 --> S201
+    AR2 --> S200
+    AR3 --> S200
+    AR3 --> S404
+    AR4 --> S200
+    AR4 --> S404
+    AR5 --> S204
+
+    AL1 --> S201
+    AL2 --> S200
+    AL3 --> S200
+    AL3 --> S404
+    AL4 --> S200
+    AL4 --> S404
+    AL5 --> S204
+
+    T1 --> S200
+    T1 --> S401
+    T2 --> S200
+    T2 --> S401
+    T2 --> S404
+    T3 --> S201
+    T3 --> S401
+    T4 --> S200
+    T4 --> S401
+    T4 --> S404
+    T5 --> S204
+    T5 --> S401
+
+    U1 --> S200
+    U2 --> S200
+    U2 --> S404
+    U3 --> S200
+    U3 --> S403
+    U3 --> S404
+    U4 --> S204
+    U4 --> S404
+
+    F1 --> S200
+    F2 --> S201
+    F2 --> S400
+    F2 --> S422
+    F3 --> S200
+    F3 --> S400
+    F3 --> S404
+    F4 --> S201
+    F4 --> S400
+    F4 --> S422
+    F5 --> S200
+    F5 --> S400
+    F5 --> S404
+    F6 --> S201
+    F6 --> S400
+    F6 --> S422
+    F7 --> S200
+    F7 --> S400
+    F7 --> S404
+
+    DOC --> S200
+
+    style A1 fill:#FFE4E1
+    style A2 fill:#FFE4E1
+    style A3 fill:#FFE4E1
+    style AR1 fill:#E0FFE0
+    style AR2 fill:#E0FFE0
+    style AR3 fill:#E0FFE0
+    style AR4 fill:#E0FFE0
+    style AR5 fill:#E0FFE0
+    style AL1 fill:#E0E0FF
+    style AL2 fill:#E0E0FF
+    style AL3 fill:#E0E0FF
+    style AL4 fill:#E0E0FF
+    style AL5 fill:#E0E0FF
+    style T1 fill:#FFFFE0
+    style T2 fill:#FFFFE0
+    style T3 fill:#FFFFE0
+    style T4 fill:#FFFFE0
+    style T5 fill:#FFFFE0
+    style U1 fill:#FFE0FF
+    style U2 fill:#FFE0FF
+    style U3 fill:#FFE0FF
+    style U4 fill:#FFE0FF
+    style F1 fill:#E0FFFF
+    style F2 fill:#E0FFFF
+    style F3 fill:#E0FFFF
+    style F4 fill:#E0FFFF
+    style F5 fill:#E0FFFF
+    style F6 fill:#E0FFFF
+    style F7 fill:#E0FFFF
+    style DOC fill:#FFF0E0

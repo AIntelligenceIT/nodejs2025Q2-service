@@ -1,0 +1,144 @@
+graph LR
+    subgraph "FILE-LEVEL COMPARISON: develop4 vs develop-q4"
+        direction LR
+    end
+
+    subgraph "DATABASE & ORM LAYER"
+        D4_DB["develop4<br/>---<br/>❌ No Prisma<br/>❌ No database file<br/>❌ In-memory data<br/>❌ No migrations<br/>❌ No schema.prisma"]
+        
+        Q4_DB["develop-q4<br/>---<br/>✅ prisma/schema.prisma<br/>✅ prisma/dev.db<br/>✅ migrations/ folder<br/>✅ migration_lock.toml<br/>✅ PrismaService<br/>✅ PrismaModule"]
+        
+        SCHEMA["prisma/schema.prisma<br/>---<br/>Models:<br/>• User<br/>• Artist<br/>• Album<br/>• Track<br/>• Favorites<br/><br/>54 lines<br/>SQLite provider"]
+        
+        D4_DB -->|upgrade| Q4_DB
+        Q4_DB -->|defines| SCHEMA
+    end
+
+    subgraph "AUTH MODULE"
+        D4_AUTH["develop4<br/>---<br/>auth/auth.service.ts ✓<br/>auth/auth.controller.ts<br/>auth/auth.module.ts<br/>auth/guards/jwt-auth.guard.ts<br/>auth/strategies/jwt.strategy.ts<br/>auth/dto/login.dto.ts<br/>auth/dto/refresh-token.dto.ts"]
+        
+        Q4_AUTH["develop-q4<br/>---<br/>auth/auth.service.ts ✗ DELETED<br/>auth/auth.controller.ts (132±)<br/>auth/auth.module.ts<br/>auth/guards/jwt-auth.guard.ts (+4)<br/>auth/strategies/jwt.strategy.ts<br/>auth/dto/login-user.dto.ts NEW<br/>auth/dto/login.dto.ts ✗ DELETED<br/>auth/dto/refresh-token.dto.ts"]
+        
+        AUTH_CHANGE["Changes:<br/>---<br/>• AuthService removed<br/>• Logic moved to controller<br/>• JwtService injected directly<br/>• login-user.dto (renamed)<br/>• Guard enhanced<br/><br/>Lines changed: ~132"]
+        
+        D4_AUTH -->|refactor| Q4_AUTH
+        Q4_AUTH -->|details| AUTH_CHANGE
+    end
+
+    subgraph "USERS MODULE"
+        D4_USERS["develop4<br/>---<br/>src/user/  ← OLD NAME<br/>users.controller.ts (155 lines)<br/>users.service.ts (101 lines)<br/>users.module.ts<br/>interfaces/user.interface.ts<br/>dto/create-user.dto.ts<br/>dto/update-password.dto.ts"]
+        
+        Q4_USERS["develop-q4<br/>---<br/>src/users/  ← NEW NAME<br/>users.controller.ts (70 lines)<br/>users.service.ts (64 lines)<br/>users.module.ts<br/>interfaces/user.interface.ts<br/>dto/create-user.dto.ts<br/>dto/update-password.dto.ts"]
+        
+        USERS_CHANGE["Changes:<br/>---<br/>• Folder renamed user/ → users/<br/>• Controller: 155 → 70 lines (-85)<br/>• Service: 101 → 64 lines (-37)<br/>• Prisma integration<br/>• Simplified implementation<br/><br/>Impact: All imports must change"]
+        
+        D4_USERS -->|rename + refactor| Q4_USERS
+        Q4_USERS -->|details| USERS_CHANGE
+    end
+
+    subgraph "ARTISTS MODULE"
+        D4_ARTISTS["develop4<br/>---<br/>artists.controller.ts<br/>artists.service.ts<br/>artists.module.ts<br/>dto/create-artist.dto.ts<br/>dto/update-artist.dto.ts<br/>interfaces/artist.interface.ts"]
+        
+        Q4_ARTISTS["develop-q4<br/>---<br/>artists.controller.ts<br/>artists.service.ts<br/>artists.module.ts<br/>dto/create-artist.dto.ts<br/>dto/update-artist.dto.ts<br/>interfaces/artist.interface.ts"]
+        
+        ARTISTS_CHANGE["Changes:<br/>---<br/>• Service: ~147 lines (±)<br/>• Prisma queries added<br/>• Database persistence<br/>• UUID validation<br/>• Error handling improved<br/><br/>Lines changed: ~147"]
+        
+        D4_ARTISTS -->|Prisma integration| Q4_ARTISTS
+        Q4_ARTISTS -->|details| ARTISTS_CHANGE
+    end
+
+    subgraph "ALBUMS MODULE"
+        D4_ALBUMS["develop4<br/>---<br/>albums.controller.ts<br/>albums.service.ts<br/>albums.module.ts<br/>dto/create-album.dto.ts<br/>dto/update-album.dto.ts<br/>interfaces/album.interface.ts"]
+        
+        Q4_ALBUMS["develop-q4<br/>---<br/>albums.controller.ts<br/>albums.service.ts<br/>albums.module.ts<br/>dto/create-album.dto.ts<br/>dto/update-album.dto.ts<br/>interfaces/album.interface.ts"]
+        
+        ALBUMS_CHANGE["Changes:<br/>---<br/>• Service: ~163 lines (±)<br/>• Prisma queries added<br/>• Database persistence<br/>• Foreign key handling<br/>• Error handling improved<br/><br/>Lines changed: ~163"]
+        
+        D4_ALBUMS -->|Prisma integration| Q4_ALBUMS
+        Q4_ALBUMS -->|details| ALBUMS_CHANGE
+    end
+
+    subgraph "TRACKS MODULE"
+        D4_TRACKS["develop4<br/>---<br/>tracks.controller.ts<br/>tracks.service.ts<br/>tracks.module.ts<br/>dto/create-track.dto.ts<br/>dto/update-track.dto.ts<br/>interfaces/track.interface.ts"]
+        
+        Q4_TRACKS["develop-q4<br/>---<br/>tracks.controller.ts<br/>tracks.service.ts<br/>tracks.module.ts<br/>dto/create-track.dto.ts<br/>dto/update-track.dto.ts<br/>interfaces/track.interface.ts"]
+        
+        TRACKS_CHANGE["Changes:<br/>---<br/>• Service: ~132 lines (±)<br/>• Prisma queries added<br/>• Database persistence<br/>• Album + Artist relations<br/>• JwtAuthGuard applied<br/><br/>Lines changed: ~132"]
+        
+        D4_TRACKS -->|Prisma integration| Q4_TRACKS
+        Q4_TRACKS -->|details| TRACKS_CHANGE
+    end
+
+    subgraph "FAVORITES MODULE ⭐ BIGGEST CHANGE"
+        D4_FAV["develop4<br/>---<br/>favorites.controller.ts<br/>favorites.service.ts<br/>favorites.module.ts<br/>interfaces/favorites.interface.ts"]
+        
+        Q4_FAV["develop-q4<br/>---<br/>favorites.controller.ts<br/>favorites.service.ts<br/>favorites.module.ts<br/>interfaces/favorites.interface.ts ✗ DELETED"]
+        
+        FAV_CHANGE["⭐ MASSIVE REWRITE<br/>---<br/>• Service: +333 lines (±)<br/>• Prisma M:N relationships<br/>• Separate add/remove methods<br/>   for artist/album/track<br/>• UUID validation<br/>• Proper error responses<br/>• Database persistence<br/>• Logic moved from interface<br/><br/>This is the biggest change!"]
+        
+        D4_FAV -->|MAJOR rewrite| Q4_FAV
+        Q4_FAV -->|details| FAV_CHANGE
+    end
+
+    subgraph "CORE APPLICATION"
+        D4_CORE["develop4<br/>---<br/>main.ts<br/>app.module.ts<br/>app.controller.ts<br/>app.service.ts"]
+        
+        Q4_CORE["develop-q4<br/>---<br/>main.ts (+8)<br/>app.module.ts (+7)<br/>app.controller.ts<br/>app.service.ts"]
+        
+        CORE_CHANGE["Changes:<br/>---<br/>• PrismaModule added to imports<br/>• Enhanced main.ts<br/>• ValidationPipe updated<br/>• Swagger setup enhanced<br/><br/>Lines: +15 total"]
+        
+        D4_CORE -->|add PrismaModule| Q4_CORE
+        Q4_CORE -->|details| CORE_CHANGE
+    end
+
+    subgraph "CONFIGURATION FILES"
+        CFG_D4["develop4<br/>---<br/>.env (minimal)<br/>.eslintrc.js<br/>.gitignore<br/>package.json<br/>package-lock.json<br/>README.md"]
+        
+        CFG_Q4["develop-q4<br/>---<br/>.env (updated)<br/>.eslintrc.js (-7)<br/>.gitignore (+2)<br/>package.json (+8)<br/>package-lock.json (±317)<br/>README.md (+5)"]
+        
+        CFG_CHANGE["Changes:<br/>---<br/>• .eslintrc cleaned up<br/>• package.json dependencies<br/>  updated for Prisma<br/>• package-lock.json<br/>  major refactor<br/>• .env updated<br/>• README improvements"]
+        
+        CFG_D4 -->|updates| CFG_Q4
+        CFG_Q4 -->|details| CFG_CHANGE
+    end
+
+    subgraph "NEW ADDITIONS"
+        NEW_PRISMA["NEW: src/prisma/<br/>---<br/>prisma.module.ts (9 lines)<br/>prisma.service.ts (20 lines)<br/><br/>Purpose:<br/>• Singleton instance<br/>• Database connection<br/>• Graceful shutdown"]
+        
+        NEW_SCRIPTS["NEW: scripts/<br/>---<br/>check-app.ts (26 lines)<br/>run-tests.ts (58 lines)<br/>start-server.ts (23 lines)<br/><br/>Purpose:<br/>• App validation<br/>• Test automation<br/>• Server startup"]
+        
+        NEW_MIGRATIONS["NEW: prisma/migrations<br/>---<br/>20250602135947_init/<br/>  migration.sql (86 lines)<br/><br/>migration_lock.toml<br/><br/>Purpose:<br/>• Schema versioning<br/>• Database initialization"]
+        
+        NEW_TEST["NEW: test/<br/>---<br/>jest-e2e.json (13 lines)<br/>setup.ts (78 lines)<br/><br/>Purpose:<br/>• E2E test configuration<br/>• Test environment setup"]
+    end
+
+    subgraph "SUMMARY MATRIX"
+        MATRIX["📊 FILE CHANGE SUMMARY<br/>---<br/>Category           Modified  Added  Deleted  Renamed<br/>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br/>Auth               4         1      2        0<br/>Users              3         0      3        3 ✓<br/>Artists            4         0      0        0<br/>Albums             4         0      0        0<br/>Tracks             4         0      0        0<br/>Favorites          2         0      1        0<br/>Core/Config        6         0      0        0<br/>Database/ORM       -         9      0        0<br/>Scripts/Test       -         8      0        0<br/>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br/>TOTAL              25        15      6        3<br/>                                   49 files<br/>                                   +1325/-1004 lines"]
+    end
+
+    style D4_DB fill:#FFE4E1
+    style Q4_DB fill:#E0FFE0
+    style SCHEMA fill:#87CEEB
+    style D4_AUTH fill:#FFE4E1
+    style Q4_AUTH fill:#E0FFE0
+    style AUTH_CHANGE fill:#DDA0DD
+    style D4_USERS fill:#FFE4E1
+    style Q4_USERS fill:#E0FFE0
+    style USERS_CHANGE fill:#98FB98
+    style D4_ARTISTS fill:#FFE4E1
+    style Q4_ARTISTS fill:#E0FFE0
+    style ARTISTS_CHANGE fill:#87CEEB
+    style D4_ALBUMS fill:#FFE4E1
+    style Q4_ALBUMS fill:#E0FFE0
+    style ALBUMS_CHANGE fill:#87CEEB
+    style D4_TRACKS fill:#FFE4E1
+    style Q4_TRACKS fill:#E0FFE0
+    style TRACKS_CHANGE fill:#87CEEB
+    style D4_FAV fill:#FFE4E1
+    style Q4_FAV fill:#E0FFE0
+    style FAV_CHANGE fill:#F08080
+    style NEW_PRISMA fill:#FFD700
+    style NEW_SCRIPTS fill:#FFA500
+    style NEW_MIGRATIONS fill:#98FB98
+    style NEW_TEST fill:#87CEEB
+    style MATRIX fill:#F0E68C

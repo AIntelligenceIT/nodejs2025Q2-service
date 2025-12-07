@@ -1,0 +1,74 @@
+sequenceDiagram
+    participant Client as Client/Browser
+    participant AuthCtrl as AuthController
+    participant UsersService as UsersService
+    participant JwtService as JwtService
+    participant DB as Prisma/Database
+
+    autonumber
+
+    rect rgb(200, 150, 255)
+    Note over Client,DB: SIGNUP Flow
+    Client->>AuthCtrl: POST /auth/signup<br/>{login, password}
+    AuthCtrl->>UsersService: create(createUserDto)
+    UsersService->>DB: Store new user
+    DB-->>UsersService: User (without password)
+    UsersService-->>AuthCtrl: UserWithoutPassword
+    AuthCtrl-->>Client: 201 Created<br/>UserWithoutPassword
+    end
+
+    rect rgb(200, 200, 255)
+    Note over Client,DB: LOGIN Flow
+    Client->>AuthCtrl: POST /auth/login<br/>{login, password}
+    AuthCtrl->>UsersService: findByLogin(login)
+    UsersService->>DB: Query user by login
+    DB-->>UsersService: User (with password)
+    UsersService-->>AuthCtrl: User
+
+    alt Credentials valid
+        AuthCtrl->>JwtService: sign(payload, 1h)
+        JwtService-->>AuthCtrl: accessToken
+        AuthCtrl->>JwtService: sign(payload, 7d)
+        JwtService-->>AuthCtrl: refreshToken
+        AuthCtrl-->>Client: 200 OK<br/>{accessToken, refreshToken}
+    else Credentials invalid
+        AuthCtrl-->>Client: 401 Unauthorized<br/>Invalid credentials
+    end
+    end
+
+    rect rgb(255, 200, 200)
+    Note over Client,DB: REFRESH TOKEN Flow
+    Client->>AuthCtrl: POST /auth/refresh<br/>{refreshToken}
+    AuthCtrl->>JwtService: verify(refreshToken)
+    
+    alt Token valid
+        JwtService-->>AuthCtrl: payload {userId, login}
+        AuthCtrl->>JwtService: sign(payload, 1h)
+        JwtService-->>AuthCtrl: new accessToken
+        AuthCtrl-->>Client: 200 OK<br/>{accessToken}
+    else Token invalid/expired
+        JwtService-->>AuthCtrl: throw error
+        AuthCtrl-->>Client: 401 Unauthorized<br/>Invalid refresh token
+    end
+    end
+
+    rect rgb(255, 250, 150)
+    Note over Client,DB: PROTECTED ENDPOINT Access
+    Client->>AuthCtrl: GET /artist/123<br/>Authorization: Bearer accessToken
+    AuthCtrl->>JwtService: verify(accessToken)
+    
+    alt Token valid
+        JwtService-->>AuthCtrl: payload {userId, login}
+        AuthCtrl->>DB: Fetch artist data
+        DB-->>AuthCtrl: Artist data
+        AuthCtrl-->>Client: 200 OK<br/>Artist
+    else Token invalid/expired
+        JwtService-->>AuthCtrl: throw error
+        AuthCtrl-->>Client: 401 Unauthorized<br/>Invalid token
+    end
+    end
+
+    style AuthCtrl fill:#F39C12
+    style UsersService fill:#50C878
+    style JwtService fill:#F1C40F
+    style DB fill:#E74C3C

@@ -1,0 +1,85 @@
+graph TB
+    subgraph "NestJS Application"
+        subgraph "AppModule"
+            AM["AppModule<br/>(main.ts)"]
+        end
+
+        subgraph "Core Modules"
+            USER["UsersModule<br/>UsersController<br/>UsersService"]
+            AUTH["AuthModule<br/>AuthController<br/>JwtStrategy<br/>JwtAuthGuard"]
+            ARTIST["ArtistsModule<br/>ArtistsController<br/>ArtistsService"]
+            ALBUM["AlbumsModule<br/>AlbumsController<br/>AlbumsService"]
+            TRACK["TracksModule<br/>TracksController<br/>TracksService"]
+            FAV["FavoritesModule<br/>FavoritesController<br/>FavoritesService"]
+            PRISMA["PrismaModule<br/>PrismaService"]
+        end
+
+        subgraph "Global Middleware & Guards"
+            VP["ValidationPipe<br/>whitelist: true<br/>transform: true<br/>forbidNonWhitelisted: true"]
+            JWT["JwtAuthGuard<br/>(conditional via TEST_MODE)"]
+        end
+
+        subgraph "Documentation & Config"
+            SWAGGER["Swagger/OpenAPI<br/>Available at /doc"]
+        end
+    end
+
+    subgraph "Database Layer"
+        SQLITE["SQLite Database<br/>prisma/dev.db"]
+        SCHEMA["Prisma Schema<br/>- User<br/>- Artist<br/>- Album<br/>- Track<br/>- Favorites"]
+    end
+
+    subgraph "External Libraries"
+        NEST["@nestjs/core"]
+        JWT_LIB["@nestjs/jwt<br/>Passport"]
+        PRISMA_LIB["@prisma/client"]
+    end
+
+    AM -->|imports| USER
+    AM -->|imports| AUTH
+    AM -->|imports| ARTIST
+    AM -->|imports| ALBUM
+    AM -->|imports| TRACK
+    AM -->|imports| FAV
+    AM -->|imports| PRISMA
+
+    AUTH -->|depends on| USER
+    ARTIST -->|depends on| PRISMA
+    ALBUM -->|depends on| PRISMA
+    TRACK -->|depends on| PRISMA
+    FAV -->|depends on| PRISMA
+    USER -->|depends on| PRISMA
+
+    USER -->|uses| JWT_LIB
+    AUTH -->|uses| NEST
+    AUTH -->|uses| JWT_LIB
+
+    PRISMA -->|connects to| SQLITE
+    SQLITE -->|managed by| SCHEMA
+
+    VP -->|applied globally| USER
+    VP -->|applied globally| AUTH
+    VP -->|applied globally| ARTIST
+    VP -->|applied globally| ALBUM
+    VP -->|applied globally| TRACK
+    VP -->|applied globally| FAV
+
+    JWT -->|guards routes| TRACK
+    JWT -->|optional| ARTIST
+    JWT -->|optional| ALBUM
+
+    SWAGGER -->|documents| AUTH
+    SWAGGER -->|documents| ARTIST
+    SWAGGER -->|documents| ALBUM
+    SWAGGER -->|documents| TRACK
+    SWAGGER -->|documents| USER
+    SWAGGER -->|documents| FAV
+
+    style AM fill:#4A90E2
+    style USER fill:#50C878
+    style AUTH fill:#F39C12
+    style PRISMA fill:#E74C3C
+    style SQLITE fill:#95A5A6
+    style VP fill:#9B59B6
+    style JWT fill:#F1C40F
+    style SWAGGER fill:#3498DB

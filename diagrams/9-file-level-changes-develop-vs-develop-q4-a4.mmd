@@ -1,0 +1,26 @@
+graph TB
+  %% Compact file-level changes for A4
+  DB[Prisma & migrations added]
+  Auth[Auth: service removed]
+  Users[users/ rename]
+  Favorites[Favorites: rewrite]
+  Scripts[New scripts: start/run/check]
+  Tests[Test setup & jest-e2e.json]
+
+  DB --> Auth
+  DB --> Users
+  Users --> Favorites
+  Scripts --> Tests
+
+  Files[49 files changed]
+  M[25 M]
+  A[15 A]
+  D[6 D]
+  R[3 R]
+
+  Files --> M
+  Files --> A
+  Files --> D
+  Files --> R
+
+  %% NOTE: prisma/schema.prisma + dev.db + migrations

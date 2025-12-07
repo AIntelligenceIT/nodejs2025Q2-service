@@ -1,0 +1,26 @@
+graph TB
+  %% A4-friendly module dependencies
+  App[AppModule]
+  Users[UsersModule]
+  Auth[AuthModule]
+  Prisma[PrismaModule]
+  Artists[ArtistsModule]
+  Albums[AlbumsModule]
+  Tracks[TracksModule]
+  Favorites[FavoritesModule]
+
+  App --> Users
+  App --> Auth
+  App --> Prisma
+  App --> Artists
+  App --> Albums
+  App --> Tracks
+  App --> Favorites
+
+  Users --> Prisma
+  Artists --> Prisma
+  Albums --> Prisma
+  Tracks --> Prisma
+  Favorites --> Prisma
+
+  %% NOTE: AppModule contains Controllers + Providers

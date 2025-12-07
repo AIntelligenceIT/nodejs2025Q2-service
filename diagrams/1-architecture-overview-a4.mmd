@@ -1,0 +1,31 @@
+graph TB
+  A[AppModule\nValidationPipe | Swagger | JwtGuard]
+  U[UsersModule]
+  AU[AuthModule]
+  AR[ArtistsModule]
+  AL[AlbumsModule]
+  T[TracksModule]
+  F[FavoritesModule]
+  P[PrismaModule]
+  DB[(SQLite)]
+
+  A --> U
+  A --> AU
+  A --> AR
+  A --> AL
+  A --> T
+  A --> F
+  A --> P
+
+  P --> DB
+  AU --> U
+  U --> P
+  AR --> P
+  AL --> P
+  T --> P
+  F --> P
+
+  style A fill:#4A90E2,stroke:#333,stroke-width:1px
+  style P fill:#E74C3C
+  classDef smallText font-size:12px;
+  class A,U,AU,AR,AL,T,F,P smallText;

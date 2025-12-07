@@ -1,0 +1,92 @@
+graph TB
+    subgraph "BRANCH COMPARISON: develop (develop4) vs develop-q4"
+        direction TB
+    end
+
+    subgraph "COMMITS & HISTORY"
+        D4_COM["develop4<br/>---<br/>Latest commits:<br/>da2b684: chore: test and README<br/>d9f567f: chore: test and README 3<br/>5f3bb71: chore: test and README 2<br/>231a0da: chore: test and README<br/>e42f6fa: chore: test auth<br/><br/>⏱️ Focus: Test improvements<br/>   & README updates<br/>   & auth test fixes"]
+        
+        Q4_COM["develop-q4<br/>---<br/>2 commits ahead:<br/>62a9421: fix: all tests passing<br/>         + 422 response + lint<br/>d5a223c: test: run server+tests<br/>         + switch to Prisma<br/>         + fix modules + lint<br/><br/>⏱️ Focus: Prisma integration<br/>   & test automation<br/>   & module refactor"]
+    end
+
+    subgraph "STATISTICS"
+        STATS["📊 Overall Changes:<br/>---<br/>Commits:<br/>  • develop4 → develop-q4: 2 new<br/>  • develop-q4 → develop4: 10 new<br/><br/>Files Changed: 49 total<br/>  • Modified (M): 25 files<br/>  • Added (A): 15 files<br/>  • Deleted (D): 6 files<br/>  • Renamed (R): 3 files<br/><br/>Lines: +1325 / -1004"]
+    end
+
+    subgraph "ARCHITECTURE & DATABASE CHANGES"
+        ARCH_D4["develop4<br/>---<br/>❌ No Prisma<br/>❌ No PrismaService<br/>❌ In-memory storage<br/>❌ No migrations<br/>❌ No dev.db<br/><br/>Database: Memory-based<br/>ORM: None"]
+        
+        ARCH_Q4["develop-q4<br/>---<br/>✅ Full Prisma integration<br/>✅ PrismaService (new)<br/>✅ SQLite database<br/>✅ Migrations included<br/>✅ dev.db file<br/><br/>Database: SQLite file-based<br/>ORM: Prisma Client<br/>Benefits: Persistence, type-safety"]
+    end
+
+    subgraph "FOLDER STRUCTURE CHANGES"
+        FOLDER_D4["develop4<br/>---<br/>src/user/<br/>  ├── users.controller.ts<br/>  ├── users.service.ts<br/>  └── interfaces/<br/>      └── user.interface.ts<br/><br/>NO: src/prisma/"]
+        
+        FOLDER_Q4["develop-q4<br/>---<br/>src/users/  ← RENAMED<br/>  ├── users.controller.ts<br/>  ├── users.service.ts<br/>  └── interfaces/<br/>      └── user.interface.ts<br/><br/>NEW: src/prisma/<br/>      ├── prisma.module.ts<br/>      └── prisma.service.ts<br/><br/>NEW: scripts/<br/>      ├── check-app.ts<br/>      ├── run-tests.ts<br/>      └── start-server.ts"]
+    end
+
+    subgraph "KEY FILE CHANGES: ADDED"
+        ADD["✨ New files in develop-q4:<br/>---<br/>1️⃣ Database Layer:<br/>   • prisma/schema.prisma (54 lines)<br/>   • prisma/migrations/.../<br/>   • prisma/dev.db (102KB binary)<br/><br/>2️⃣ Prisma Module:<br/>   • src/prisma/prisma.module.ts<br/>   • src/prisma/prisma.service.ts<br/><br/>3️⃣ Automation Scripts:<br/>   • scripts/check-app.ts<br/>   • scripts/run-tests.ts<br/>   • scripts/start-server.ts<br/><br/>4️⃣ Test Setup:<br/>   • test/jest-e2e.json<br/>   • test/setup.ts (78 lines)"]
+    end
+
+    subgraph "KEY FILE CHANGES: DELETED"
+        DEL["🗑️ Removed from develop-q4:<br/>---<br/>Auth:<br/>   ❌ src/auth/auth.service.ts<br/>   ❌ src/auth/dto/login.dto.ts<br/><br/>User module:<br/>   ❌ src/user/dto/create-user.dto.ts<br/>   ❌ src/user/dto/update-password.dto.ts<br/>   ❌ src/user/users.controller.ts<br/><br/>Favorites:<br/>   ❌ src/favorites/interfaces/favorites.interface.ts<br/><br/>Impact: Code reorganized<br/>          & refactored"]
+    end
+
+    subgraph "KEY FILE CHANGES: MODIFIED (25 files)"
+        MOD["🔧 Modified files in develop-q4:<br/>---<br/>1️⃣ Configuration:<br/>   • .env (8 ±)<br/>   • .eslintrc.js (-7 lines)<br/>   • .gitignore<br/>   • README.md<br/>   • package.json / package-lock.json<br/><br/>2️⃣ Auth Module (~40% change):<br/>   • src/auth/auth.controller.ts (132±)<br/>   • src/auth/auth.module.ts<br/>   • src/auth/dto/login-user.dto.ts (NEW)<br/>   • src/auth/dto/refresh-token.dto.ts<br/>   • src/auth/guards/jwt-auth.guard.ts (+4)<br/><br/>3️⃣ Service Layers (~50% change):<br/>   • src/albums/albums.service.ts (163±)<br/>   • src/artists/artists.service.ts (147±)<br/>   • src/favorites/favorites.service.ts (333±) ⭐<br/>   • src/tracks/tracks.service.ts (132±)<br/>   • src/users/users.service.ts (64±)<br/><br/>4️⃣ Controllers & Modules:<br/>   • All controllers updated (10-27 lines each)<br/>   • All modules updated<br/><br/>5️⃣ Main & Core:<br/>   • src/main.ts (+8)<br/>   • src/app.module.ts (+7)"]
+    end
+
+    subgraph "MAJOR TECHNICAL CHANGES"
+        PRISMA_CHANGE["🗄️ PRISMA INTEGRATION<br/>---<br/>develop4: In-memory/no ORM<br/>develop-q4: Full SQLite + Prisma<br/><br/>Impact:<br/>• All services now use<br/>  this.prisma.model.operation()<br/>• Type-safe database queries<br/>• Migrations for schema versioning<br/>• M:N relationships via Prisma<br/>• Error handling: 422 for<br/>  missing entities"]
+        
+        AUTH_REFACTOR["🔐 AUTH REFACTORING<br/>---<br/>develop4: auth.service.ts exists<br/>develop-q4: Logic moved to controller<br/><br/>Changes:<br/>• Removed auth.service.ts<br/>• JwtService injected directly<br/>• login-user.dto (renamed from login.dto)<br/>• Simpler auth flow<br/>• Enhanced guard logic"]
+        
+        FAVORITES_REWRITE["❤️ FAVORITES REWRITE (333 lines!)<br/>---<br/>develop4: Interface-based logic<br/>develop-q4: Prisma-based logic<br/><br/>Changes:<br/>• Uses Prisma M:N relationships<br/>• Separate methods for<br/>  artist/album/track add/remove<br/>• UUID validation<br/>• Proper error responses<br/>• Database persistence"]
+        
+        MODULE_REFACTOR["📦 REFACTORING<br/>---<br/>develop4: src/user/ (old naming)<br/>develop-q4: src/users/ (new naming)<br/><br/>Impact:<br/>• Folder renamed for consistency<br/>• All imports updated<br/>• DTOs restructured<br/>• Consistent naming convention"]
+    end
+
+    subgraph "MODULE DEPENDENCIES CHANGES"
+        DEP_D4["develop4<br/>---<br/>AppModule imports:<br/>✓ UsersModule<br/>✓ AuthModule<br/>✓ ArtistsModule<br/>✓ AlbumsModule<br/>✓ TracksModule<br/>✓ FavoritesModule<br/><br/>❌ NO: PrismaModule"]
+        
+        DEP_Q4["develop-q4<br/>---<br/>AppModule imports:<br/>✓ UsersModule<br/>✓ AuthModule<br/>✓ ArtistsModule<br/>✓ AlbumsModule<br/>✓ TracksModule<br/>✓ FavoritesModule<br/>✅ NEW: PrismaModule<br/><br/>PrismaModule:<br/>• Exports PrismaService<br/>• Used by all data services"]
+    end
+
+    subgraph "TEST SUITE CHANGES"
+        TEST_D4["develop4<br/>---<br/>Limited test setup<br/>Basic jest config<br/>Minimal e2e tests"]
+        
+        TEST_Q4["develop-q4<br/>---<br/>Enhanced test setup:<br/>✅ test/setup.ts (78 lines)<br/>✅ test/jest-e2e.json<br/>✅ test/lib/request.ts (improved)<br/>✅ scripts/run-tests.ts<br/>✅ scripts/check-app.ts<br/><br/>Benefits: Automation,<br/>            CI/CD ready"]
+    end
+
+    subgraph "RESPONSE CODES & ERROR HANDLING"
+        ERRORS["Error handling improvements:<br/>---<br/>develop4:<br/>  • Basic errors<br/>  • Limited validation<br/><br/>develop-q4:<br/>  ✅ 400: BadRequestException<br/>     (invalid UUID format)<br/>  ✅ 404: NotFoundException<br/>     (entity not found)<br/>  ✅ 422: UnprocessableEntityException<br/>     (entity doesn't exist in context)<br/>  ✅ 401: UnauthorizedException<br/>     (invalid credentials)<br/>  ✅ 403: ForbiddenException<br/>     (insufficient permissions)<br/><br/>Example: Add artist to favorites<br/>  404 if Favorites record missing<br/>  422 if Artist doesn't exist"]
+    end
+
+    subgraph "AUTOMATION SCRIPTS"
+        SCRIPTS["New scripts in develop-q4:<br/>---<br/>1. scripts/start-server.ts<br/>   → Starts NestJS app<br/><br/>2. scripts/run-tests.ts<br/>   → Runs full test suite<br/>   → Includes e2e tests<br/>   → Jest configuration<br/><br/>3. scripts/check-app.ts<br/>   → Validates app structure<br/>   → Checks dependencies<br/>   → Pre-commit checks<br/><br/>Purpose: CI/CD automation<br/>         & local development"]
+    end
+
+    %% Connecting relationships
+    D4_COM -.-> STATS
+    Q4_COM -.-> STATS
+    STATS -.-> ARCH_D4
+    STATS -.-> ARCH_Q4
+    ARCH_Q4 --> PRISMA_CHANGE
+    FOLDER_Q4 --> ADD
+    ADD --> KEY_IMPACT["🎯 KEY IMPACT AREAS<br/>---<br/>1. Database Layer: Complete rewrite<br/>2. Service Layer: Prisma integration<br/>3. Auth: Simplified & refactored<br/>4. Favorites: Major rewrite (333 lines)<br/>5. Testing: Enhanced & automated<br/>6. File Structure: Reorganized"]
+    KEY_IMPACT --> MIGRATION_GUIDE["📋 MIGRATION GUIDE<br/>---<br/>To upgrade from develop4 to develop-q4:<br/><br/>1. Update imports: user/ → users/<br/>2. Update all services to use Prisma<br/>3. Run: npm install (new dependencies)<br/>4. Run: npx prisma migrate dev<br/>5. Run: npm run test:e2e<br/>6. Update .env with DB variables<br/>7. Verify: npm run start<br/><br/>Breaking Changes:<br/>• In-memory storage replaced<br/>• auth.service.ts removed<br/>• All CRUD now uses Prisma<br/>• New error codes (422)"]
+
+    style D4_COM fill:#FFE4E1
+    style Q4_COM fill:#E0FFE0
+    style STATS fill:#FFFFE0
+    style ARCH_D4 fill:#FFE4E1
+    style ARCH_Q4 fill:#E0FFE0
+    style PRISMA_CHANGE fill:#87CEEB
+    style AUTH_REFACTOR fill:#DDA0DD
+    style FAVORITES_REWRITE fill:#F08080
+    style MODULE_REFACTOR fill:#98FB98
+    style TEST_Q4 fill:#E0FFE0
+    style SCRIPTS fill:#87CEEB
+    style KEY_IMPACT fill:#FFD700
+    style MIGRATION_GUIDE fill:#FFA500

@@ -1,0 +1,98 @@
+graph TB
+    subgraph "SERVICE LAYER EVOLUTION: develop4 → develop-q4"
+        direction TB
+    end
+
+    subgraph "USERS SERVICE"
+        USERS_D4["develop4: UsersService<br/>---<br/>Storage: In-memory array<br/>private users: User[] = [];<br/><br/>Methods:<br/>• findAll()<br/>• findOne(id)<br/>• findByLogin(login)<br/>• create(dto)<br/>• update(id, dto)<br/>• updatePassword(id, dto)<br/>• remove(id)<br/><br/>Features:<br/>✓ UUID generation<br/>✓ Password validation<br/>❌ No persistence<br/>❌ No database<br/><br/>Lines: ~101"]
+        
+        USERS_Q4["develop-q4: UsersService<br/>---<br/>Storage: Prisma + SQLite<br/>constructor(private prisma: PrismaService)<br/><br/>Methods:<br/>• findAll()<br/>• findOne(id)<br/>• findByLogin(login)<br/>• create(dto)<br/>• update(id, dto)<br/>• updatePassword(id, dto)<br/>• remove(id)<br/><br/>Features:<br/>✓ UUID validation<br/>✓ Prisma queries<br/>✓ Database persistence<br/>✓ Type-safe queries<br/>✓ Migrations support<br/><br/>Lines: ~64<br/>(More efficient with Prisma)"]
+        
+        USERS_DIFF["Key Differences:<br/>---<br/>Data Source:<br/>  In-memory array → SQLite DB<br/><br/>Query Style:<br/>  Manual array ops → Prisma Client<br/><br/>Persistence:<br/>  Lost on restart → Permanent storage<br/><br/>Type Safety:<br/>  Basic types → Prisma generated types<br/><br/>Code Simplification:<br/>  More imperative → More declarative"]
+        
+        USERS_D4 --> USERS_Q4
+        USERS_Q4 --> USERS_DIFF
+    end
+
+    subgraph "AUTH SERVICE (DELETED)"
+        AUTH_D4["develop4: AuthService<br/>---<br/>✓ Existed (104 lines)<br/><br/>Responsibilities:<br/>• JWT token signing<br/>• Credential validation<br/>• User lookup<br/><br/>Constructor:<br/>AuthService(jwtService, usersService)"]
+        
+        AUTH_Q4["develop-q4: AuthService<br/>---<br/>✗ DELETED<br/><br/>Logic moved to:<br/>AuthController<br/><br/>New approach:<br/>• JwtService injected directly<br/>• Credential logic in controller<br/>• Simpler flow<br/>• More straightforward"]
+        
+        AUTH_REASON["Rationale:<br/>---<br/>Benefits of change:<br/>1. Simpler codebase<br/>2. Direct JWT handling<br/>3. Clear separation:<br/>   HTTP → Controller<br/>   Auth → Passport/JWT<br/>4. Less indirection<br/><br/>Trade-off:<br/>- Controller gains logic<br/>- But logic is simpler now"]
+        
+        AUTH_D4 --> AUTH_Q4
+        AUTH_Q4 --> AUTH_REASON
+    end
+
+    subgraph "ARTISTS SERVICE"
+        ART_D4["develop4: ArtistsService<br/>---<br/>Storage: In-memory<br/>Data: Array of Artist objects<br/><br/>Methods:<br/>• create(dto)<br/>• findAll()<br/>• findOne(id)<br/>• update(id, dto)<br/>• remove(id)<br/><br/>Features:<br/>✓ Basic CRUD<br/>✓ UUID validation<br/>❌ No persistence<br/><br/>Lines: ~X"]
+        
+        ART_Q4["develop-q4: ArtistsService<br/>---<br/>Storage: Prisma + SQLite<br/>Methods:<br/>• create(dto)<br/>• findAll()<br/>• findOne(id)<br/>• update(id, dto)<br/>• remove(id)<br/><br/>Features:<br/>✓ Prisma CRUD<br/>✓ UUID validation<br/>✓ Database persistence<br/>✓ Relations support<br/>  (albums, tracks, favorites)<br/>✓ Atomic operations<br/><br/>Lines: ~147"]
+        
+        ART_PATTERN["Implementation Pattern:<br/>---<br/>async create(createArtistDto)<br/>  validation<br/>  this.prisma.artist.create({<br/>    data: createArtistDto<br/>  })<br/>  return artist<br/><br/>Consistent across all<br/>CRUD services"]
+        
+        ART_D4 --> ART_Q4
+        ART_Q4 --> ART_PATTERN
+    end
+
+    subgraph "ALBUMS SERVICE"
+        ALB_D4["develop4: AlbumsService<br/>---<br/>Storage: In-memory<br/><br/>Features:<br/>✓ CRUD operations<br/>✓ Artist association<br/>  (optional)<br/>❌ No persistence"]
+        
+        ALB_Q4["develop-q4: AlbumsService<br/>---<br/>Storage: Prisma + SQLite<br/><br/>Features:<br/>✓ Prisma CRUD<br/>✓ Artist FK handling<br/>✓ Persistence<br/>✓ Artist validation<br/>✓ Track relations<br/><br/>Lines: ~163"]
+        
+        ALB_Q4 --> ART_PATTERN
+    end
+
+    subgraph "TRACKS SERVICE"
+        TRK_D4["develop4: TracksService<br/>---<br/>Storage: In-memory<br/><br/>Features:<br/>✓ CRUD operations<br/>✓ Artist/Album links<br/>✓ Protected endpoints<br/>❌ No persistence"]
+        
+        TRK_Q4["develop-q4: TracksService<br/>---<br/>Storage: Prisma + SQLite<br/><br/>Features:<br/>✓ Prisma CRUD<br/>✓ FK to Artist/Album<br/>✓ Persistence<br/>✓ Protected endpoints<br/>✓ Favorites integration<br/><br/>Lines: ~132"]
+        
+        TRK_Q4 --> ART_PATTERN
+    end
+
+    subgraph "FAVORITES SERVICE ⭐ MOST CHANGED"
+        FAV_D4["develop4: FavoritesService<br/>---<br/>Storage: In-memory objects<br/>Logic: Interface-based<br/><br/>Data Structure:<br/>private favorites: Favorites;<br/><br/>Methods:<br/>• findAll()<br/>• addArtist(id)<br/>• removeArtist(id)<br/>• addAlbum(id)<br/>• removeAlbum(id)<br/>• addTrack(id)<br/>• removeTrack(id)<br/><br/>Features:<br/>✓ In-memory storage<br/>❌ No persistence<br/>❌ No relationships<br/><br/>Lines: < 100"]
+        
+        FAV_Q4["develop-q4: FavoritesService<br/>---<br/>Storage: Prisma M:N relations<br/>Logic: Database-driven<br/><br/>Data Structure:<br/>Uses Prisma Favorites model<br/>with M:N relationships<br/><br/>Methods:<br/>• findAll() → findFirst()<br/>• addArtist(id)<br/>• removeArtist(id)<br/>• addAlbum(id)<br/>• removeAlbum(id)<br/>• addTrack(id)<br/>• removeTrack(id)<br/><br/>Features:<br/>✓ Prisma M:N relations<br/>✓ UUID validation<br/>✓ Entity existence check<br/>✓ Proper error codes<br/>  (400, 404, 422)<br/>✓ Database persistence<br/><br/>Lines: ~333"]
+        
+        FAV_EVOLUTION["Evolution Details:<br/>---<br/>develop4:<br/>  favorites: {<br/>    artists: [],<br/>    albums: [],<br/>    tracks: []\n  }<br/><br/>develop-q4:<br/>  Favorites model with<br/>  M:N relations:<br/>  - artists: Artist[]<br/>  - albums: Album[]<br/>  - tracks: Track[]<br/><br/>Each add/remove:<br/>1. Validate UUID<br/>2. Check entity exists<br/>3. Get/create Favorites<br/>4. Prisma.connect/disconnect<br/>5. Return updated Favorites<br/><br/>Major Benefits:<br/>✓ Type-safe<br/>✓ Atomic operations<br/>✓ Proper error handling<br/>✓ Persistent data<br/>✓ Relational integrity<br/><br/>⭐ This is a complete rewrite<br/>   333 lines is 3-4x larger!"]
+        
+        FAV_D4 --> FAV_Q4
+        FAV_Q4 --> FAV_EVOLUTION
+    end
+
+    subgraph "COMMON PATTERN EMERGENCE"
+        PATTERN["Prisma Service Pattern<br/>---<br/>All services now follow:<br/><br/>@Injectable()<br/>export class XyzService {<br/>  constructor(private prisma: PrismaService) {}<br/><br/>  async findAll(): Promise<XyzDto[]> {<br/>    return this.prisma.xyz.findMany();<br/>  }<br/><br/>  async findOne(id: string): Promise<XyzDto> {<br/>    const entity = await<br/>      this.prisma.xyz.findUnique<br/>        ({ where: { id } });<br/>    if (!entity)<br/>      throw new NotFoundException(...);<br/>    return entity;<br/>  }<br/><br/>  async create(dto: CreateXyzDto)<br/>    return this.prisma.xyz.create<br/>      ({ data: dto });<br/>  }<br/><br/>  // ... similar for update/remove<br/>}<br/><br/>Benefits:<br/>✓ Consistency<br/>✓ Type safety<br/>✓ Testability<br/>✓ Maintainability<br/>✓ Scalability"]
+    end
+
+    subgraph "DATA FLOW COMPARISON"
+        D4_FLOW["develop4 Data Flow<br/>---<br/>HTTP Request<br/>  ↓<br/>Controller<br/>  ↓<br/>Service<br/>  ↓<br/>In-Memory Array<br/>  ↓<br/>Response<br/><br/>On Restart:<br/>ALL DATA LOST"]
+        
+        Q4_FLOW["develop-q4 Data Flow<br/>---<br/>HTTP Request<br/>  ↓<br/>Controller<br/>  ↓<br/>Service<br/>  ↓<br/>Prisma Client<br/>  ↓<br/>SQLite Database<br/>  ↓<br/>Response<br/><br/>On Restart:<br/>DATA PERSISTS"]
+        
+        FLOW_IMP["Implications:<br/>---<br/>develop4:<br/>• Good for testing<br/>• Good for prototyping<br/>• Not suitable for production<br/>• Stateless for each session<br/><br/>develop-q4:<br/>• Production-ready<br/>• Data persistence<br/>• Relational queries<br/>• Migration support<br/>• Proper error handling"]
+        
+        D4_FLOW --> FLOW_IMP
+        Q4_FLOW --> FLOW_IMP
+    end
+
+    style USERS_D4 fill:#FFE4E1
+    style USERS_Q4 fill:#E0FFE0
+    style USERS_DIFF fill:#87CEEB
+    style AUTH_D4 fill:#FFE4E1
+    style AUTH_Q4 fill:#E0FFE0
+    style AUTH_REASON fill:#DDA0DD
+    style ART_D4 fill:#FFE4E1
+    style ART_Q4 fill:#E0FFE0
+    style ART_PATTERN fill:#87CEEB
+    style ALB_Q4 fill:#E0FFE0
+    style TRK_Q4 fill:#E0FFE0
+    style FAV_D4 fill:#FFE4E1
+    style FAV_Q4 fill:#E0FFE0
+    style FAV_EVOLUTION fill:#F08080
+    style PATTERN fill:#FFD700
+    style D4_FLOW fill:#FFE4E1
+    style Q4_FLOW fill:#E0FFE0
+    style FLOW_IMP fill:#98FB98

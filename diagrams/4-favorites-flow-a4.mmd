@@ -1,0 +1,36 @@
+sequenceDiagram
+  participant C as Client
+  participant FC as FavController
+  participant FS as FavService
+  participant P as Prisma
+
+  C->>FC: GET /favorites
+  FC->>FS: findAll()
+  FS->>P: favorites.findFirst(include)
+  P-->>FS: favorites or null
+  FS-->>FC: favorites (empty arrays if null)
+  FC-->>C: 200
+
+  C->>FC: POST /favorites/artist/:id
+  FC->>FS: addArtist(id)
+  FS->>P: artist.findUnique(id)
+  alt not found
+    FS-->>FC: 422
+    FC-->>C: 422
+  else found
+    FS->>P: find/create favorites & connect
+    P-->>FS: updated favorites
+    FS-->>FC: 201
+    FC-->>C: 201
+  end
+
+  C->>FC: DELETE /favorites/artist/:id
+  FC->>FS: removeArtist(id)
+  FS->>P: find favorites with artist
+  alt not found
+    FS-->>FC: 404
+    FC-->>C: 404
+  else
+    FS->>P: disconnect artist
+    FC-->>C: 200
+  end

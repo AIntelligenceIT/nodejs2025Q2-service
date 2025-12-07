@@ -1,0 +1,19 @@
+graph TB
+  %% A4-friendly service evolution summary
+  subgraph Before
+    U1[Users: in-memory]
+    A1[Auth: auth.service exists]
+    F1[Favorites: in-memory]
+  end
+  subgraph After
+    U2[Users: Prisma]
+    A2[Auth: controller-centric]
+    F2[Favorites: Prisma M:N]
+  end
+
+  U1 --> U2
+  A1 --> A2
+  F1 --> F2
+
+  %% NOTE: +333 lines, UUID validation, 422 errors (moved into node labels / comments)
+  %% NOTE: persistence, prisma client (moved into node labels / comments)

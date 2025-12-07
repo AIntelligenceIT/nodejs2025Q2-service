@@ -1,0 +1,107 @@
+graph TB
+    subgraph "Dependency Injection & Module Structure"
+        
+        subgraph "AppModule (Root)"
+            AM["AppModule<br/>@Module({<br/>  imports: [modules],<br/>  controllers: [AppController],<br/>  providers: [AppService]<br/>})"]
+        end
+
+        subgraph "UsersModule"
+            UM_CTRL["UsersController<br/>GET /user<br/>GET /user/:id<br/>PUT /user/:id/password<br/>DELETE /user/:id"]
+            UM_SERV["UsersService<br/>findAll()<br/>findOne(id)<br/>findByLogin(login)<br/>create(dto)<br/>update(id, dto)<br/>updatePassword(id, dto)<br/>remove(id)"]
+            UM_PROV["Providers:<br/>UsersService"]
+            UM_EXP["Exports:<br/>UsersService"]
+        end
+
+        subgraph "AuthModule"
+            AUTH_CTRL["AuthController<br/>POST /auth/signup<br/>POST /auth/login<br/>POST /auth/refresh"]
+            AUTH_STRAT["JwtStrategy<br/>@PassportStrategy(Strategy)<br/>validate(payload)"]
+            AUTH_GUARD["JwtAuthGuard<br/>@Injectable()<br/>canActivate(context)"]
+            AUTH_PROV["Providers:<br/>JwtStrategy<br/>JwtAuthGuard"]
+            AUTH_IMP["Imports:<br/>UsersModule<br/>PassportModule<br/>JwtModule.register({<br/>  secret<br/>  signOptions<br/>})"]
+            AUTH_EXP["Exports:<br/>JwtModule<br/>JwtAuthGuard"]
+        end
+
+        subgraph "PrismaModule"
+            PRISMA_SERV["PrismaService<br/>@Injectable()<br/>onModuleInit()<br/>onModuleDestroy()<br/>--- Database methods ---<br/>user.findUnique()<br/>artist.findMany()<br/>album.create()<br/>etc."]
+            PRISMA_PROV["Providers:<br/>PrismaService"]
+            PRISMA_EXP["Exports:<br/>PrismaService"]
+        end
+
+        subgraph "ArtistsModule"
+            ARTIST_CTRL["ArtistsController<br/>POST /artist<br/>GET /artist<br/>GET /artist/:id<br/>PUT /artist/:id<br/>DELETE /artist/:id"]
+            ARTIST_SERV["ArtistsService<br/>create(dto)<br/>findAll()<br/>findOne(id)<br/>update(id, dto)<br/>remove(id)"]
+            ARTIST_PROV["Providers:<br/>ArtistsService"]
+        end
+
+        subgraph "AlbumsModule"
+            ALBUM_CTRL["AlbumsController<br/>POST /album<br/>GET /album<br/>GET /album/:id<br/>PUT /album/:id<br/>DELETE /album/:id"]
+            ALBUM_SERV["AlbumsService<br/>create(dto)<br/>findAll()<br/>findOne(id)<br/>update(id, dto)<br/>remove(id)"]
+            ALBUM_PROV["Providers:<br/>AlbumsService"]
+        end
+
+        subgraph "TracksModule"
+            TRACK_CTRL["TracksController<br/>@UseGuards(JwtAuthGuard)<br/>POST /track<br/>GET /track<br/>GET /track/:id<br/>PUT /track/:id<br/>DELETE /track/:id"]
+            TRACK_SERV["TracksService<br/>create(dto)<br/>findAll()<br/>findOne(id)<br/>update(id, dto)<br/>remove(id)"]
+            TRACK_PROV["Providers:<br/>TracksService"]
+        end
+
+        subgraph "FavoritesModule"
+            FAV_CTRL["FavoritesController<br/>GET /favorites<br/>POST /favorites/artist/:id<br/>DELETE /favorites/artist/:id<br/>POST /favorites/album/:id<br/>DELETE /favorites/album/:id<br/>POST /favorites/track/:id<br/>DELETE /favorites/track/:id"]
+            FAV_SERV["FavoritesService<br/>findAll()<br/>addArtist(id)<br/>removeArtist(id)<br/>addAlbum(id)<br/>removeAlbum(id)<br/>addTrack(id)<br/>removeTrack(id)"]
+            FAV_PROV["Providers:<br/>FavoritesService"]
+        end
+
+    end
+
+    AM -->|imports| UM_IMP["UsersModule"]
+    AM -->|imports| AUTH_IMP["AuthModule"]
+    AM -->|imports| PRISMA_MOD["PrismaModule"]
+    AM -->|imports| ARTIST_MOD["ArtistsModule"]
+    AM -->|imports| ALBUM_MOD["AlbumsModule"]
+    AM -->|imports| TRACK_MOD["TracksModule"]
+    AM -->|imports| FAV_MOD["FavoritesModule"]
+
+    UM_CTRL --> UM_SERV
+    UM_SERV --> UM_PROV
+    UM_CTRL -.->|injects| UM_PROV
+
+    AUTH_CTRL -->|injects| UM_EXP
+    AUTH_CTRL -->|injects| AUTH_PROV
+    AUTH_STRAT --> AUTH_PROV
+    AUTH_GUARD --> AUTH_PROV
+    AUTH_IMP -->|imports| UM_IMP
+
+    PRISMA_SERV --> PRISMA_PROV
+    PRISMA_PROV --> PRISMA_EXP
+
+    ARTIST_CTRL --> ARTIST_SERV
+    ARTIST_SERV -->|injects| PRISMA_EXP
+    ARTIST_SERV --> ARTIST_PROV
+
+    ALBUM_CTRL --> ALBUM_SERV
+    ALBUM_SERV -->|injects| PRISMA_EXP
+    ALBUM_SERV --> ALBUM_PROV
+
+    TRACK_CTRL --> TRACK_SERV
+    TRACK_SERV -->|injects| PRISMA_EXP
+    TRACK_SERV --> TRACK_PROV
+
+    FAV_CTRL --> FAV_SERV
+    FAV_SERV -->|injects| PRISMA_EXP
+    FAV_SERV --> FAV_PROV
+
+    style AM fill:#4A90E2
+    style UM_CTRL fill:#50C878
+    style UM_SERV fill:#50C878
+    style AUTH_CTRL fill:#F39C12
+    style AUTH_STRAT fill:#F39C12
+    style AUTH_GUARD fill:#F39C12
+    style PRISMA_SERV fill:#E74C3C
+    style ARTIST_CTRL fill:#50C878
+    style ARTIST_SERV fill:#50C878
+    style ALBUM_CTRL fill:#3498DB
+    style ALBUM_SERV fill:#3498DB
+    style TRACK_CTRL fill:#9B59B6
+    style TRACK_SERV fill:#9B59B6
+    style FAV_CTRL fill:#F1C40F
+    style FAV_SERV fill:#F1C40F

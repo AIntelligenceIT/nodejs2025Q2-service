@@ -1,0 +1,14 @@
+graph TB
+  %% Compact test & CI/CD improvements for A4
+  Before[develop4: minimal tests]
+  After[develop-q4: automated & CI-ready]
+  Setup[test/setup.ts]
+  Scripts[scripts/run-tests & start-server]
+  Jest[jest-e2e.json]
+
+  Before --> After
+  After --> Setup
+  After --> Scripts
+  After --> Jest
+
+  %% NOTE: Reproducible runs, DB seeding, error scenario tests

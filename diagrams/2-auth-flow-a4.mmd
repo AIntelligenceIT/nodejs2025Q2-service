@@ -1,0 +1,34 @@
+sequenceDiagram
+  participant C as Client
+  participant AC as AuthController
+  participant US as UsersService
+  participant JWT as JwtService
+  participant DB as Prisma
+
+  C->>AC: POST /auth/signup {login,password}
+  AC->>US: create(dto)
+  US->>DB: create user
+  DB-->>US: user
+  US-->>AC: user
+  AC-->>C: 201 user (no pwd)
+
+  C->>AC: POST /auth/login {login,password}
+  AC->>US: findByLogin
+  US->>DB: find user
+  DB-->>US: user
+  alt valid
+    AC->>JWT: sign(access)
+    AC->>JWT: sign(refresh 7d)
+    AC-->>C: {access, refresh}
+  else invalid
+    AC-->>C: 401
+  end
+
+  C->>AC: POST /auth/refresh {refresh}
+  AC->>JWT: verify
+  alt ok
+    AC->>JWT: sign(access)
+    AC-->>C: {access}
+  else
+    AC-->>C: 401
+  end

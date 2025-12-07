@@ -1,0 +1,21 @@
+graph TB
+  %% Condensed request lifecycle for A4
+  Req[HTTP Request]
+  Val[ValidationPipe]
+  Route[Router]
+  Guard[JwtAuthGuard/@Public check]
+  Ctrl[Controller]
+  Svc[Service]
+  DB[Prisma / SQLite]
+  Resp[HTTP Response]
+
+  Req --> Val --> Route --> Guard --> Ctrl --> Svc --> DB
+  DB --> Svc --> Resp
+  Guard -->|fail| Resp
+  Val -->|fail| Resp
+
+  classDef small font-size:12px;
+  class Req,Val,Route,Guard,Ctrl,Svc,DB,Resp small;
+
+  %% NOTE: ValidationPipe - whitelist + transform
+  %% NOTE: Guard - optional per-route

@@ -1,0 +1,89 @@
+graph TB
+    subgraph "TEST & CI/CD EVOLUTION: develop4 → develop-q4"
+        direction TB
+    end
+
+    subgraph "TEST INFRASTRUCTURE"
+        TEST_D4["develop4 Test Setup<br/>---<br/>Jest configuration<br/>Basic test files<br/>Limited e2e tests<br/>Manual test execution<br/><br/>Status: Minimal"]
+        
+        TEST_Q4["develop-q4 Test Setup<br/>---<br/>✅ test/jest-e2e.json<br/>✅ test/setup.ts (78 lines)<br/>✅ test/lib/request.ts<br/>✅ Enhanced jest config<br/>✅ Automated setup<br/>✅ CI/CD ready<br/><br/>Status: Production-grade"]
+        
+        TEST_D4 --> TEST_Q4
+    end
+
+    subgraph "TEST SETUP FILE"
+        SETUP["test/setup.ts (78 lines)<br/>---<br/>Functions:<br/>1. loadDatabase()<br/>   • Initialize Prisma<br/>   • Seed test data<br/><br/>2. cleanDatabase()<br/>   • Clean up after tests<br/>   • Reset state<br/><br/>3. getTokenAndUserId(login)<br/>   • Create test user<br/>   • Return JWT token<br/>   • Return userId<br/><br/>4. Other helpers<br/>   • removeTokenUser(userId)<br/>   • shouldAuthorizationBeTested()\n   • getEnvVariable(key)<br/><br/>Benefits:<br/>✓ Consistent test environment<br/>✓ Isolated test runs<br/>✓ Fast setup/teardown<br/>✓ Reusable utilities"]
+        
+        TEST_Q4 --> SETUP
+    end
+
+    subgraph "TEST EXECUTION FLOW"
+        BEFORE["BEFORE: develop4<br/>---<br/>Manual steps:<br/>1. npm install<br/>2. npm test<br/>3. Check output<br/>4. Manual debugging<br/><br/>Problems:<br/>❌ Time-consuming<br/>❌ Error-prone<br/>❌ Hard to automate<br/>❌ CI/CD unfriendly"]
+        
+        AFTER["AFTER: develop-q4<br/>---<br/>Automated scripts:<br/>1. npm run start-server<br/>   (scripts/start-server.ts)<br/>2. npm run test<br/>   (test/setup.ts)<br/>3. npm run check-app<br/>   (scripts/check-app.ts)<br/>4. Automated validation<br/><br/>Benefits:<br/>✅ Reproducible<br/>✅ Fast execution<br/>✅ CI/CD integration<br/>✅ Consistent results"]
+        
+        BEFORE --> AFTER
+    end
+
+    subgraph "SCRIPTS ADDED"
+        SCRIPT_START["scripts/start-server.ts<br/>---<br/>Purpose: Start NestJS app<br/><br/>Usage:<br/>  npm run start:dev<br/><br/>Features:<br/>✓ Environment validation<br/>✓ Database setup<br/>✓ Server launch<br/>✓ Port configuration<br/>✓ Error handling<br/><br/>23 lines"]
+        
+        SCRIPT_TESTS["scripts/run-tests.ts<br/>---<br/>Purpose: Run test suite<br/><br/>Usage:<br/>  npm run test:e2e<br/><br/>Executes:<br/>1. Jest setup<br/>2. Load test database<br/>3. Run all .spec.ts files<br/>4. Generate reports<br/>5. Clean up<br/><br/>58 lines"]
+        
+        SCRIPT_CHECK["scripts/check-app.ts<br/>---<br/>Purpose: Validate app<br/><br/>Usage:<br/>  npm run check<br/><br/>Validates:<br/>✓ Dependencies installed<br/>✓ .env configured<br/>✓ Database ready<br/>✓ Services healthy<br/>✓ No lint errors<br/><br/>26 lines"]
+        
+        SETUP --> SCRIPT_START
+        SETUP --> SCRIPT_TESTS
+        SETUP --> SCRIPT_CHECK
+    end
+
+    subgraph "TEST CONFIGURATION"
+        JEST_CONFIG["jest-e2e.json<br/>---<br/>Settings:<br/>• testEnvironment<br/>• setupFilesAfterEnv<br/>• testMatch patterns<br/>• Coverage config<br/>• Timeout settings<br/><br/>13 lines<br/><br/>Purpose:<br/>✓ E2E specific config<br/>✓ Different from unit tests<br/>✓ Longer timeouts<br/>✓ Database setup hooks"]
+    end
+
+    subgraph "REQUEST TESTING UTILITIES"
+        REQUEST["test/lib/request.ts<br/>---<br/>Improvements in develop-q4:<br/><br/>New Features:<br/>✓ Enhanced HTTP client<br/>✓ Bearer token support<br/>✓ Error handling<br/>✓ Status code validation<br/>✓ JSON response parsing<br/>✓ Query param builders<br/><br/>Methods:<br/>• get(url, token?)<br/>• post(url, data, token?)<br/>• put(url, data, token?)<br/>• delete(url, token?)<br/>• request(method, url, ...)<br/><br/>+21 lines in develop-q4"]
+    end
+
+    subgraph "E2E TEST FILES"
+        E2E_TESTS["Test Suites:<br/>---<br/>test/*.e2e.spec.ts:<br/>• auth/albums.e2e.spec.ts<br/>• auth/artists.e2e.spec.ts<br/>• auth/favorites.e2e.spec.ts<br/>• auth/tracks.e2e.spec.ts<br/>• auth/users.e2e.spec.ts<br/>• refresh/refresh.e2e.spec.ts<br/><br/>Coverage Areas:<br/>✓ Authentication<br/>✓ Authorization (JWT)<br/>✓ Token refresh<br/>✓ CRUD operations<br/>✓ Error handling<br/>✓ Status codes"]
+    end
+
+    subgraph "TEST EXECUTION MATRIX"
+        MATRIX["Test Coverage: develop4 vs develop-q4<br/>---<br/>Aspect              develop4    develop-q4<br/>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br/>E2E Tests           ❌ Limited  ✅ Full<br/>Setup Automation    ❌ Manual   ✅ Auto<br/>Database Prep       ❌ Manual   ✅ Auto<br/>Token Generation    ❌ Manual   ✅ Utility<br/>Cleanup             ❌ Manual   ✅ Auto<br/>Error Validation    ❌ Basic    ✅ Detailed<br/>Status Codes        ❌ Missing  ✅ 400,404,422<br/>CI/CD Ready         ❌ No       ✅ Yes<br/>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br/>Speed: 🐢 Slow       🚀 Fast<br/>Reliability: ⚠️ Flaky    ✅ Stable"]
+    end
+
+    subgraph "CI/CD INTEGRATION"
+        CI_D4["develop4 CI/CD<br/>---<br/>Challenges:<br/>❌ Manual test setup<br/>❌ No automation scripts<br/>❌ Database initialization<br/>❌ Test data management<br/>❌ Hard to parallelize<br/><br/>Result: Difficult to integrate"]
+        
+        CI_Q4["develop-q4 CI/CD<br/>---<br/>Ready for:<br/>✅ GitHub Actions<br/>✅ GitLab CI<br/>✅ Jenkins<br/>✅ Travis CI<br/><br/>Pipeline Example:<br/>1. npm install<br/>2. npm run check-app<br/>3. npm run test<br/>4. npm run test:e2e<br/>5. npm run lint<br/>6. Deploy if passing<br/><br/>Result: Production-ready"]
+        
+        CI_D4 --> CI_Q4
+    end
+
+    subgraph "TESTING WORKFLOW IMPROVEMENTS"
+        WORKFLOW["Local Development:<br/>---<br/>develop4 Workflow:<br/>1. npm install<br/>2. npm test<br/>   (might fail randomly)<br/>3. Debug manually<br/>4. Repeat<br/><br/>develop-q4 Workflow:<br/>1. npm install<br/>2. npm run check-app<br/>   (validate environment)<br/>3. npm run test:e2e\n   (reliable tests)\n4. npm run build\n   (compile)\n5. npm start\n   (run server)<br/><br/>Benefits:<br/>✓ Predictable results<br/>✓ Fast feedback<br/>✓ Easy debugging<br/>✓ CI/CD compatible"]
+    end
+
+    subgraph "ERROR SCENARIO TESTING"
+        ERRORS["New Test Scenarios in develop-q4<br/>---<br/>Before (develop4):<br/>• Basic happy path tests<br/>• Limited error coverage<br/>• No 422 testing<br/>• No UUID validation<br/><br/>After (develop-q4):<br/>✅ UUID validation errors (400)<br/>✅ Not found errors (404)<br/>✅ Entity missing errors (422)<br/>✅ Invalid credentials (401)<br/>✅ Permission denied (403)<br/>✅ Favorites logic tests<br/>✅ Artist existence checks<br/>✅ Album/Track relations<br/>✅ M:N relationship testing<br/><br/>Coverage: Much more robust"]
+    end
+
+    subgraph "RECOMMENDATION"
+        REC["✨ Next Steps:<br/>---<br/>1. Review test files<br/>2. Add missing tests<br/>3. Set up GitHub Actions<br/>4. Enable code coverage<br/>5. Set up pre-commit hooks<br/>6. Document test procedures<br/><br/>Target: 80%+ code coverage<br/>Goal: Zero flaky tests<br/>Timeline: Complete before release"]
+    end
+
+    style TEST_D4 fill:#FFE4E1
+    style TEST_Q4 fill:#E0FFE0
+    style SETUP fill:#87CEEB
+    style BEFORE fill:#FFE4E1
+    style AFTER fill:#E0FFE0
+    style JEST_CONFIG fill:#98FB98
+    style REQUEST fill:#DDA0DD
+    style E2E_TESTS fill:#87CEEB
+    style MATRIX fill:#F0E68C
+    style CI_D4 fill:#FFE4E1
+    style CI_Q4 fill:#E0FFE0
+    style WORKFLOW fill:#FFD700
+    style ERRORS fill:#F08080
+    style REC fill:#90EE90
