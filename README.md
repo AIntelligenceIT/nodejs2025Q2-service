@@ -38,11 +38,41 @@ docker compose up
 - App runs at: [http://localhost:4000](http://localhost:4000)  
 - Stop with: `docker compose down`
 
+### Developer mode (hot-reload)
+
+To run the app with hot-reload inside Docker (source mounted and `nest` in watch mode):
+
+```bash
+# builds images and starts DB + app in dev mode
+docker compose build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+```
+
+This mode mounts your local source into the container and runs `npm run start:dev` so changes in `src` restart the app automatically.
+
 ## ✅ Testing
 
 ```bash
 npm run test
 ```
+
+### Migrations
+
+The project includes TypeORM DataSource and migrations in `src/migrations`.
+
+To generate a new migration (after changing entities):
+
+```bash
+npm run migration:generate -- -n MigrationName
+```
+
+To run migrations:
+
+```bash
+npm run migration:run
+```
+
+If you run tests locally and the DB is provided by docker-compose, set `POSTGRES_HOST=localhost` or run tests inside the container.
 
 ## 📘 API Docs
 

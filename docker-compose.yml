@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
 
   db:
-    image: alandocke/nodejs2025q2-db:latest
+    image: postgres:16-alpine
     container_name: home-library-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
