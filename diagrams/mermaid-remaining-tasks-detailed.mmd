@@ -1,0 +1,33 @@
+%% Pozostałe do zrobienia wg oceny (szczegółowy przegląd, A4-friendly)
+flowchart TB
+  subgraph DONE["✅ Wykonane"]
+    TESTS["Testy: auth + noauth\n(94 + 67 testów przechodzą)"]
+    DB_FIX["DB init: usunięto transaction_timeout\n(inicjalizacja OK)"]
+    AUTH_GUARD["Auth guard: TEST_MODE support\n(bypass w noauth)"]
+    DIAGRAMS["Diagramy Mermaid\n(5 szczegółowych + A4 sekcji)"]
+    NODE24["Node.js upgrade: 22 → 24-alpine\n(requirements spełnione)"]
+    IMAGES_BUILT["Obrazy zbudowane\nApp: 290 MB | DB: 276 MB (< 500 MB ✅)"]
+  end
+
+  subgraph TODO["❌ TODO - Wysokiego priorytetu"]
+    PR["1. Pull Request (develop_part2b-q4 → master)\nForfeit: -40 jeśli brak\nKomenda: gh pr create --fill --base master"]
+    MIGRATIONS["2. TypeORM Migrations\n+30 pkt jeśli wykonane\nKomenda: npm run migration:generate -- -n init"]
+    PUSH["3. Docker Push do DockerHub\nFix: docker login z poprawnymi poświadczeniami\nPotem: docker push alandocke/nodejs2025q2-app:latest\n         docker push alandocke/nodejs2025q2-db:latest"]
+  end
+
+  subgraph OPTIONAL["⭐ Opcjonalne (bonusowe)"]
+    HOTRELOAD["Hot-reload: dodaj volume ./src w docker-compose\n+20 pkt jeśli działa"]
+    DB_BUILD["Dockerfile.postgres: użyj w docker-compose (build zamiast image)\n(dobra praktyka, opcjonalnie punktowane)"]
+    REMOVE_VERSION["Cleanup: usuń 'version' z docker-compose.yml\n(wyeliminuj warning)"]
+  end
+
+  DONE --> TODO
+  TODO --> OPTIONAL
+
+  classDef completed fill:#e6ffe6,stroke:#2d9a2d,stroke-width:2px,color:#000;
+  classDef high fill:#ff9999,stroke:#990000,stroke-width:2px,color:#000;
+  classDef optional fill:#fff9e6,stroke:#d4af37,stroke-width:2px,color:#000;
+
+  class TESTS,DB_FIX,AUTH_GUARD,DIAGRAMS,NODE24,IMAGES_BUILT completed
+  class PR,MIGRATIONS,PUSH high
+  class HOTRELOAD,DB_BUILD,REMOVE_VERSION optional

@@ -3,7 +3,7 @@ name: Build and Push Docker images
 on:
   push:
     branches:
-      - develop_part2  # gałąź do automatycznego builda
+      - develop_part2b-q4  # gałąź do automatycznego builda
 
 jobs:
   build-and-push:

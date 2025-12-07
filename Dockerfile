@@ -1,5 +1,5 @@
 # Etap 1: Budowanie aplikacji
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /usr/src/app
 
@@ -22,7 +22,7 @@ COPY . .
 RUN npm run build
 
 # Etap 2: Uruchamianie aplikacji
-FROM node:22-alpine
+FROM node:24-alpine
 WORKDIR /usr/src/app
 
 # Kopiuj tylko niezbędne pliki manifestu dla instalacji zależności produkcyjnych

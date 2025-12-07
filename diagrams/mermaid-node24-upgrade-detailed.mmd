@@ -1,0 +1,22 @@
+%% Node.js Upgrade od 22 do 24 — szczegółowy proces (A4-friendly)
+flowchart TB
+  subgraph UPGRADE["Node.js 22 → 24 Upgrade"]
+    START["Wymaganie: Node.js 24.x (assignment)\nAktualne: node:22-alpine w Dockerfile"]
+    CHANGE1["Zmiana w Dockerfile (builder stage)\nFROM node:22-alpine → FROM node:24-alpine"]
+    CHANGE2["Zmiana w Dockerfile (runtime stage)\nFROM node:22-alpine → FROM node:24-alpine"]
+    BUILD["Rebuild obrazu aplikacji:\ndocker build -t alandocke/nodejs2025q2-app:latest ."]
+    RESULT["✅ Obraz zbudowany z Node 24\nRozmiar: 290 MB (< 500 MB OK)"]
+  end
+
+  START --> CHANGE1
+  CHANGE1 --> CHANGE2
+  CHANGE2 --> BUILD
+  BUILD --> RESULT
+
+  classDef requirement fill:#fff9e6,stroke:#d4af37,color:#000;
+  classDef change fill:#e6f3ff,stroke:#0055aa,color:#000;
+  classDef success fill:#e6ffe6,stroke:#2d9a2d,color:#000;
+
+  class START requirement
+  class CHANGE1,CHANGE2 change
+  class RESULT success

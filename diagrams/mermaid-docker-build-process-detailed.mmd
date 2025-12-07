@@ -1,0 +1,26 @@
+%% Proces budowania i tagowania obrazów (szczegółowy, A4-friendly)
+flowchart TB
+  subgraph BUILD_PROCESS["Build & Tag Process"]
+    BUILD_APP["docker build -t alandocke/nodejs2025q2-app:latest ."]
+    RESULT_APP["✅ App image zbudowany\nRozmiar: 290 MB"]
+    BUILD_DB["docker build -f Dockerfile.postgres\n-t alandocke/nodejs2025q2-db:latest ."]
+    RESULT_DB["✅ DB image zbudowany\nRozmiar: 276 MB"]
+  end
+
+  subgraph IMAGES_READY["Obrazy gotowe do push"]
+    IMG_APP["alandocke/nodejs2025q2-app:latest\nNode.js 24-alpine + NestJS + deps"]
+    IMG_DB["alandocke/nodejs2025q2-db:latest\nPostgreSQL 16-alpine"]
+  end
+
+  BUILD_APP --> RESULT_APP
+  BUILD_DB --> RESULT_DB
+  RESULT_APP --> IMG_APP
+  RESULT_DB --> IMG_DB
+
+  classDef build fill:#e6f3ff,stroke:#0055aa,color:#000;
+  classDef success fill:#e6ffe6,stroke:#2d9a2d,color:#000;
+  classDef ready fill:#fff9e6,stroke:#d4af37,color:#000;
+
+  class BUILD_APP,BUILD_DB build
+  class RESULT_APP,RESULT_DB success
+  class IMG_APP,IMG_DB ready

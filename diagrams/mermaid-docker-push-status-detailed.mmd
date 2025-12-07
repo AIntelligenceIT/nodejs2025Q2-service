@@ -1,0 +1,36 @@
+%% Push do DockerHub i status (szczegółowy, A4-friendly)
+flowchart TB
+  subgraph PUSH_ATTEMPT["Docker Push - Attempt"]
+    CMD_APP["docker push alandocke/nodejs2025q2-app:latest"]
+    LAYERS["Przygotowanie warstw obrazu\n(7 warstw)"]
+    ERROR["❌ Błąd: unauthorized\naccess token has insufficient scopes"]
+  end
+
+  subgraph ROOT_CAUSE["Przyczyna problemu"]
+    LOGIN_STATUS["Brak logowania do DockerHub\nlub token bez uprawnień"]
+    FIX_OPTION["Wymagane: docker login\nz poprawnymi poświadczeniami"]
+  end
+
+  subgraph NEXT_STEPS["Następne kroki"]
+    OPTION_A["(A) Zalogować interaktywnie:\ndocker login"]
+    OPTION_B["(B) Użyć tokenu z uprawnieniami"]
+    OPTION_C["(C) Push lokalnie z poprawnymi poświadczeniami"]
+  end
+
+  CMD_APP --> LAYERS
+  LAYERS --> ERROR
+  ERROR --> LOGIN_STATUS
+  LOGIN_STATUS --> FIX_OPTION
+  FIX_OPTION --> OPTION_A
+  FIX_OPTION --> OPTION_B
+  FIX_OPTION --> OPTION_C
+
+  classDef attempt fill:#e6f3ff,stroke:#0055aa,color:#000;
+  classDef error fill:#ffe6e6,stroke:#b52d2d,color:#000;
+  classDef cause fill:#fff9e6,stroke:#d4af37,color:#000;
+  classDef solution fill:#e6ffe6,stroke:#2d9a2d,color:#000;
+
+  class CMD_APP,LAYERS attempt
+  class ERROR error
+  class LOGIN_STATUS,FIX_OPTION cause
+  class OPTION_A,OPTION_B,OPTION_C solution
