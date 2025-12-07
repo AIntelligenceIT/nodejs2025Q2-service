@@ -1,0 +1,143 @@
+flowchart TB
+  Start["Start"] --> TEST{"TEST_MODE == auth?"}
+  TEST -- "No" --> ALLOW1["Allow request - skip auth"]
+  TEST -- "Yes" --> PUBLIC{"Route Public?"}
+  PUBLIC -- "Yes" --> ALLOW2["Allow - public"]
+  PUBLIC -- "No" --> PASSPORT["Invoke JWT strategy"]
+  PASSPORT --> VALIDATE{"Token valid?"}
+  VALIDATE -- "Yes" --> ALLOW3["Allow - authenticated"]
+  VALIDATE -- "No" --> DENY["Deny - 401 Unauthorized"]
+
+  ALLOW1 --> End["End"]
+  ALLOW2 --> End
+  ALLOW3 --> End
+  DENY --> End
+
+  classDef critical fill:#fee,stroke:#900,stroke-width:1px;
+  class DENY critical;
+flowchart TB
+  Start["Start"] --> TEST{"TEST_MODE == auth?"}
+  TEST -- "No" --> ALLOW1["Allow request - skip auth"]
+  TEST -- "Yes" --> PUBLIC{"Route Public?"}
+  PUBLIC -- "Yes" --> ALLOW2["Allow - public"]
+  PUBLIC -- "No" --> PASSPORT["Invoke JWT strategy"]
+  PASSPORT --> VALIDATE{"Token valid?"}
+  VALIDATE -- "Yes" --> ALLOW3["Allow - authenticated"]
+  VALIDATE -- "No" --> DENY["Deny - 401 Unauthorized"]
+
+  ALLOW1 --> End["End"]
+  ALLOW2 --> End
+  ALLOW3 --> End
+  DENY --> End
+
+  classDef critical fill:#fee,stroke:#900,stroke-width:1px;
+  class DENY critical;
+flowchart TB
+  Start([Start]) --> TEST{"TEST_MODE == auth?"}
+  TEST -- No --> ALLOW1([Allow request - skip auth])
+  TEST -- Yes --> PUBLIC{Route Public?}
+  PUBLIC -- Yes --> ALLOW2([Allow - public])
+  PUBLIC -- No --> PASSPORT([Invoke JWT strategy])
+  PASSPORT --> VALIDATE{Token valid?}
+  VALIDATE -- Yes --> ALLOW3([Allow - authenticated])
+  VALIDATE -- No --> DENY([Deny - 401 Unauthorized])
+
+  ALLOW1 --> End([End])
+  ALLOW2 --> End
+  ALLOW3 --> End
+  DENY --> End
+
+  classDef critical fill:#fee,stroke:#900,stroke-width:1px;
+  class DENY critical;
+flowchart TB
+  Start([Start]) --> TEST{TEST_MODE == auth?}
+  TEST -- No --> ALLOW1([Allow request - skip auth])
+  TEST -- Yes --> PUBLIC{Route Public?}
+  PUBLIC -- Yes --> ALLOW2([Allow - public])
+  PUBLIC -- No --> PASSPORT([Invoke JWT strategy])
+  PASSPORT --> VALIDATE{Token valid?}
+  VALIDATE -- Yes --> ALLOW3([Allow - authenticated])
+  VALIDATE -- No --> DENY([Deny - 401 Unauthorized])
+
+  ALLOW1 --> End([End])
+  ALLOW2 --> End
+  ALLOW3 --> End
+  DENY --> End
+
+  classDef critical fill:#fee,stroke:#900,stroke-width:1px;
+  class DENY critical;
+%% Auth guard flow (A4-friendly)
+flowchart TB
+  Start([Start]) --> TEST{TEST_MODE == auth?}
+  TEST -- No --> ALLOW1([Allow request - skip auth])
+  TEST -- Yes --> PUBLIC{Route Public?}
+  PUBLIC -- Yes --> ALLOW2([Allow - public])
+  PUBLIC -- No --> PASSPORT([Invoke JWT strategy])
+  PASSPORT --> VALIDATE{Token valid?}
+  VALIDATE -- Yes --> ALLOW3([Allow - authenticated])
+  VALIDATE -- No --> DENY([Deny - 401 Unauthorized])
+
+  ALLOW1 --> End([End])
+  ALLOW2 --> End
+  ALLOW3 --> End
+  DENY --> End
+
+  classDef critical fill:#fee,stroke:#900,stroke-width:1px;
+  class DENY critical;
+%% Auth guard flow (A4-friendly)
+flowchart TB
+  Start([Start]) --> TEST{Is TEST_MODE == auth?}
+%% Auth guard flow (A4-friendly) - cleaned
+flowchart TB
+  Start([Start]) --> TEST{TEST_MODE == auth?}
+  TEST -- No --> ALLOW1([Allow request - skip auth])
+  TEST -- Yes --> PUBLIC{Route Public?}
+  PUBLIC -- Yes --> ALLOW2([Allow - public])
+  PUBLIC -- No --> PASSPORT([Invoke JWT strategy])
+  PASSPORT --> VALIDATE{Token valid?}
+  VALIDATE -- Yes --> ALLOW3([Allow - authenticated])
+  VALIDATE -- No --> DENY([Deny - 401 Unauthorized])
+
+  ALLOW1 --> End([End])
+  ALLOW2 --> End
+  ALLOW3 --> End
+  DENY --> End
+
+  classDef critical fill:#fee,stroke:#900,stroke-width:1px;
+  class DENY critical;
+%% Auth guard flow (A4-friendly)
+flowchart TB
+  Start([Start]) --> TEST{Is TEST_MODE == auth?}
+  TEST -- No --> ALLOW1([Allow request - skip auth])
+  TEST -- Yes --> PUBLIC{Is route decorated as Public?}
+  PUBLIC -- Yes --> ALLOW2([Allow request - public route])
+  PUBLIC -- No --> PASSPORT[Invoke Passport JWT strategy]
+  PASSPORT --> VALIDATE{Token provided and valid?}
+  VALIDATE -- Yes --> ALLOW3([Allow request - authenticated])
+  VALIDATE -- No --> DENY([Deny - 401 Unauthorized])
+
+  ALLOW1 --> End([End])
+  ALLOW2 --> End
+  ALLOW3 --> End
+  DENY --> End
+
+  classDef critical fill:#fee,stroke:#900,stroke-width:1px;
+  class DENY critical;
+%% Auth guard flow (A4-friendly)
+flowchart TB
+  Start([Start]) --> TEST{Is TEST_MODE == auth?}
+  TEST -- No --> ALLOW1([Allow request - skip auth])
+  TEST -- Yes --> PUBLIC{Is route decorated as Public?}
+  PUBLIC -- Yes --> ALLOW2([Allow request — public route])
+  PUBLIC -- No --> PASSPORT[Invoke Passport JWT strategy]
+  PASSPORT --> VALIDATE{Token provided and valid?}
+  VALIDATE -- Yes --> ALLOW3([Allow request — authenticated])
+  VALIDATE -- No --> DENY([Deny - 401 Unauthorized])
+
+  ALLOW1 --> End([End])
+  ALLOW2 --> End
+  ALLOW3 --> End
+  DENY --> End
+
+  classDef critical fill:#fee,stroke:#900,stroke-width:1px;
+  class DENY critical;

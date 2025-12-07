@@ -1,0 +1,41 @@
+%% Tests sequence: auth vs noauth (A4-friendly)
+sequenceDiagram
+  participant TR as Test Runner
+  participant Setup as test/setup.ts
+  participant App as Nest App
+  participant Guard as JwtAuthGuard
+  participant Ctrl as Controller
+  participant Svc as Service
+  participant DB as Prisma
+
+  TR->>Setup: start tests (env: TEST_MODE)
+  Setup->>App: NestFactory.create(AppModule)
+  alt TEST_MODE == 'auth'
+    Setup->>App: app.useGlobalGuards(new JwtAuthGuard(reflector))
+  else TEST_MODE != 'auth'
+    note right of App: Guard NOT registered — requests pass through
+  end
+
+  TR->>App: HTTP Request (no token)
+  alt TEST_MODE != 'auth'
+    App->>Ctrl: request reaches controller
+    Ctrl->>Svc: handle request
+    Svc->>DB: query
+    DB-->>Svc: result
+    Svc-->>Ctrl: response
+    Ctrl-->>App: 200 OK
+  else TEST_MODE == 'auth'
+    App->>Guard: Guard.canActivate()
+    Guard-->>App: checks TEST_MODE & @Public
+    alt no token or invalid
+      Guard-->>App: 401 Unauthorized
+    else valid token
+      Guard->>App: allow
+      App->>Ctrl: request reaches controller
+      Ctrl->>Svc: handle request
+      Svc->>DB: query
+      DB-->>Svc: result
+      Svc-->>Ctrl: response
+      Ctrl-->>App: 200 OK
+    end
+  end
